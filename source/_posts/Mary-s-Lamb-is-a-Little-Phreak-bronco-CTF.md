@@ -1,5 +1,6 @@
 ---
 title: Mary's Lamb is a Little Phreak:bronco CTF
+date: 2023-02-16
 tags: ctf bronco ctftime
 ---
   
