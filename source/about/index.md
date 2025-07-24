@@ -122,7 +122,7 @@ layout: page
 
 <div class="about-container">
   <div class="profile-card">
-    <img class="profile-avatar" src="/images/redefine-avatar.svg" alt="Abel Jorlin Avatar">
+    <img class="profile-avatar" src="/images/myself.jpg" alt="Abel Jorlin Avatar">
     <div class="profile-info">
       <h1>Abel Jorlin</h1>
       <div class="subtitle">Cybersecurity Enthusiast & Full Stack Developer</div>
