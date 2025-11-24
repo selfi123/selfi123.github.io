@@ -135,7 +135,7 @@ ls
 # Output: user.txt
 
 cat user.txt
-# Output: bc2341152c638da4a05b91d91c1df26f
+# Output: *********************
 ```
 
 One down, one to go!
@@ -198,7 +198,7 @@ I was literally jumping up and down. I grabbed the root flag:
 
 ```bash
 cat /root/root.txt
-# Output: 6d4d6c2368c3210994e624647c93119f
+# Output: *********************
 ```
 
 ---
