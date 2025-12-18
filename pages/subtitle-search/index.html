@@ -139,8 +139,8 @@
 <meta property="og:description" content="NI8STALKER, On the hunt for the next big thing">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/redefine-og.webp">
-<meta property="article:published_time" content="2025-12-18T18:13:42.959Z">
-<meta property="article:modified_time" content="2025-12-18T18:13:42.959Z">
+<meta property="article:published_time" content="2025-12-18T18:38:43.320Z">
+<meta property="article:modified_time" content="2025-12-18T18:38:43.320Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/redefine-og.webp">
@@ -640,6 +640,11 @@
     <h1>🎬 Subtitle Search & Download</h1>
     <p class="subtitle-description">Search and download subtitles for movies and TV series. Filter by language to find the perfect subtitle file.</p>
     
+    <div id="proxy-warning" class="proxy-warning hidden">
+      <p><strong>⚠️ Setup Required:</strong> This page requires a backend proxy server to work properly due to browser security restrictions. 
+      See <code>proxy-server.js</code> and <code>README.md</code> for setup instructions.</p>
+    </div>
+    
     <div class="search-section">
       <div class="type-selection">
         <label class="type-option">
@@ -677,21 +682,21 @@
         </div>
         <select id="language-filter" class="language-select">
           <option value="">All Languages</option>
-          <option value="eng">English</option>
-          <option value="spa">Spanish</option>
-          <option value="fre">French</option>
-          <option value="ger">German</option>
-          <option value="ita">Italian</option>
-          <option value="por">Portuguese</option>
-          <option value="rus">Russian</option>
-          <option value="chi">Chinese</option>
-          <option value="jpn">Japanese</option>
-          <option value="kor">Korean</option>
-          <option value="ara">Arabic</option>
-          <option value="hin">Hindi</option>
-          <option value="dut">Dutch</option>
-          <option value="pol">Polish</option>
-          <option value="tur">Turkish</option>
+          <option value="en">English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="it">Italian</option>
+          <option value="pt">Portuguese</option>
+          <option value="ru">Russian</option>
+          <option value="zh">Chinese</option>
+          <option value="ja">Japanese</option>
+          <option value="ko">Korean</option>
+          <option value="ar">Arabic</option>
+          <option value="hi">Hindi</option>
+          <option value="nl">Dutch</option>
+          <option value="pl">Polish</option>
+          <option value="tr">Turkish</option>
         </select>
         <button id="search-btn" class="search-button">
           <i class="fa-solid fa-search"></i> Search
@@ -889,6 +894,23 @@
   border-left: 4px solid #c33;
 }
 
+.proxy-warning {
+  background: #fff3cd;
+  color: #856404;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border-left: 4px solid #ffc107;
+  font-size: 0.9rem;
+}
+
+.proxy-warning code {
+  background: rgba(0,0,0,0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
 .results-container {
   margin-top: 2rem;
 }
@@ -1069,12 +1091,39 @@
 const API_KEY = 'qo2wQs1PXwIHJsXvIiWXu1ZbVjaboPh6';
 const API_BASE_URL = 'https://api.opensubtitles.com/api/v1';
 
+// Proxy Configuration
+// For local development: 'http://localhost:3001/api/proxy'
+// For production: Deploy proxy to Vercel/Netlify and set URL here
+// Example: 'https://your-subtitle-proxy.vercel.app/api/proxy'
+// 
+// To deploy proxy:
+// 1. Deploy api/proxy.js to Vercel (see DEPLOY.md)
+// 2. Update PROXY_BASE_URL below with your Vercel URL
+// 3. Regenerate and deploy your Hexo site
+const PROXY_BASE_URL = 'https://subs-proxy.vercel.app/api/proxy'; // Change this for production!
+
 // DOM Elements - will be initialized when DOM is ready
 let searchInput, languageFilter, searchBtn, loading, errorMessage, resultsContainer, resultsList;
 let typeMovie, typeSeries, seriesInputs, seasonInput, episodeInput;
 
-// Language code to name mapping
+// Language code to name mapping (ISO 639-1 codes)
 const languageNames = {
+  'en': 'English',
+  'es': 'Spanish',
+  'fr': 'French',
+  'de': 'German',
+  'it': 'Italian',
+  'pt': 'Portuguese',
+  'ru': 'Russian',
+  'zh': 'Chinese',
+  'ja': 'Japanese',
+  'ko': 'Korean',
+  'ar': 'Arabic',
+  'hi': 'Hindi',
+  'nl': 'Dutch',
+  'pl': 'Polish',
+  'tr': 'Turkish',
+  // Also support 3-letter codes for backward compatibility
   'eng': 'English',
   'spa': 'Spanish',
   'fre': 'French',
@@ -1104,7 +1153,9 @@ async function searchSubtitles(query, language = '', contentType = 'movie', seas
     });
 
     if (language) {
-      params.append('languages', language);
+      // OpenSubtitles API uses ISO 639-1 codes (2-letter)
+      // Some codes might not be supported, so we'll try and handle errors gracefully
+      params.append('languages', language.toLowerCase());
     }
 
     // Add type filter
@@ -1125,9 +1176,28 @@ async function searchSubtitles(query, language = '', contentType = 'movie', seas
     console.log('Searching with URL:', apiUrl);
     console.log('Parameters:', params.toString());
 
-    // Try direct API call first
+    // IMPORTANT: Browsers block custom User-Agent headers in fetch requests
+    // OpenSubtitles API requires: User-Agent: "AppName v1.0.0" format
+    // Solution: Use the proxy server (proxy-server.js) that adds the User-Agent header server-side
+    
     let response;
-    try {
+    
+    if (PROXY_BASE_URL) {
+      // Use proxy server
+      const proxyUrl = `${PROXY_BASE_URL}/subtitles?${params.toString()}`;
+      console.log('Making request through proxy to:', proxyUrl);
+      
+      response = await fetch(proxyUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+    } else {
+      // Try direct call (will fail with 403 due to User-Agent requirement)
+      console.log('No proxy configured - trying direct API call (will likely fail)...');
+      console.log('To fix: Set PROXY_BASE_URL or deploy proxy-server.js');
+      
       response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
@@ -1135,17 +1205,13 @@ async function searchSubtitles(query, language = '', contentType = 'movie', seas
           'Accept': 'application/json'
         }
       });
-    } catch (corsError) {
-      // If CORS error, try with proxy
-      console.log('Direct API failed, trying with CORS proxy...');
-      const proxyUrl = 'https://corsproxy.io/?';
-      response = await fetch(proxyUrl + encodeURIComponent(apiUrl), {
-        method: 'GET',
-        headers: {
-          'Api-Key': API_KEY,
-          'Accept': 'application/json'
-        }
-      });
+      
+      if (response.status === 403) {
+        // Show proxy warning
+        const warning = document.getElementById('proxy-warning');
+        if (warning) warning.classList.remove('hidden');
+        throw new Error('403 Forbidden: User-Agent header required. Please set up the proxy server (see proxy-server.js) or configure PROXY_BASE_URL in the code.');
+      }
     }
 
     console.log('Response status:', response.status);
@@ -1267,14 +1333,28 @@ window.downloadSubtitle = async function(fileId, fileName) {
     button.disabled = true;
     button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Downloading...';
     
-    const apiUrl = `${API_BASE_URL}/download`;
-    const requestBody = JSON.stringify({
-      file_id: fileId
-    });
-    
-    // Try direct API call first
     let response;
-    try {
+    
+    if (PROXY_BASE_URL) {
+      // Use proxy server
+      const proxyUrl = `${PROXY_BASE_URL}/download`;
+      console.log('Making download request through proxy to:', proxyUrl);
+      
+      response = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          file_id: fileId
+        })
+      });
+    } else {
+      // Try direct call (will fail with 403)
+      const apiUrl = `${API_BASE_URL}/download`;
+      console.log('No proxy configured - trying direct download (will likely fail)...');
+      
       response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -1282,21 +1362,14 @@ window.downloadSubtitle = async function(fileId, fileName) {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: requestBody
+        body: JSON.stringify({
+          file_id: fileId
+        })
       });
-    } catch (corsError) {
-      // If CORS error, try with proxy
-      console.log('Direct download API failed, trying with CORS proxy...');
-      const proxyUrl = 'https://corsproxy.io/?';
-      response = await fetch(proxyUrl + encodeURIComponent(apiUrl), {
-        method: 'POST',
-        headers: {
-          'Api-Key': API_KEY,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: requestBody
-      });
+      
+      if (response.status === 403) {
+        throw new Error('403 Forbidden: User-Agent header required. Please set up the proxy server.');
+      }
     }
 
     if (!response.ok) {
