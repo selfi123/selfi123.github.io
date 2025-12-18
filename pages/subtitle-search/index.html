@@ -139,8 +139,8 @@
 <meta property="og:description" content="NI8STALKER, On the hunt for the next big thing">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/redefine-og.webp">
-<meta property="article:published_time" content="2025-12-18T18:06:49.187Z">
-<meta property="article:modified_time" content="2025-12-18T18:06:49.187Z">
+<meta property="article:published_time" content="2025-12-18T18:13:42.959Z">
+<meta property="article:modified_time" content="2025-12-18T18:13:42.959Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/redefine-og.webp">
@@ -1069,19 +1069,9 @@
 const API_KEY = 'qo2wQs1PXwIHJsXvIiWXu1ZbVjaboPh6';
 const API_BASE_URL = 'https://api.opensubtitles.com/api/v1';
 
-// DOM Elements
-const searchInput = document.getElementById('search-input');
-const languageFilter = document.getElementById('language-filter');
-const searchBtn = document.getElementById('search-btn');
-const loading = document.getElementById('loading');
-const errorMessage = document.getElementById('error-message');
-const resultsContainer = document.getElementById('results-container');
-const resultsList = document.getElementById('results-list');
-const typeMovie = document.getElementById('type-movie');
-const typeSeries = document.getElementById('type-series');
-const seriesInputs = document.getElementById('series-inputs');
-const seasonInput = document.getElementById('season-input');
-const episodeInput = document.getElementById('episode-input');
+// DOM Elements - will be initialized when DOM is ready
+let searchInput, languageFilter, searchBtn, loading, errorMessage, resultsContainer, resultsList;
+let typeMovie, typeSeries, seriesInputs, seasonInput, episodeInput;
 
 // Language code to name mapping
 const languageNames = {
@@ -1189,6 +1179,11 @@ async function searchSubtitles(query, language = '', contentType = 'movie', seas
 
 // Display search results
 function displayResults(subtitles) {
+  if (!resultsList) {
+    console.error('resultsList not found!');
+    return;
+  }
+  
   resultsList.innerHTML = '';
   
   subtitles.forEach(subtitle => {
@@ -1265,8 +1260,8 @@ function createSubtitleItem(subtitle) {
   return item;
 }
 
-// Download subtitle
-async function downloadSubtitle(fileId, fileName) {
+// Download subtitle - must be global for onclick handlers
+window.downloadSubtitle = async function(fileId, fileName) {
   try {
     const button = event.target.closest('.download-btn');
     button.disabled = true;
@@ -1334,46 +1329,53 @@ async function downloadSubtitle(fileId, fileName) {
   } catch (error) {
     showError(`Error downloading subtitle: ${error.message}`);
     const button = event.target.closest('.download-btn');
-    button.disabled = false;
-    button.innerHTML = '<i class="fa-solid fa-download"></i> Download';
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = '<i class="fa-solid fa-download"></i> Download';
+    }
     console.error('Download error:', error);
   }
-}
+};
 
 // Utility functions
 function showLoading() {
-  loading.classList.remove('hidden');
+  if (loading) loading.classList.remove('hidden');
 }
 
 function hideLoading() {
-  loading.classList.add('hidden');
+  if (loading) loading.classList.add('hidden');
 }
 
 function showError(message) {
-  errorMessage.textContent = message;
-  errorMessage.classList.remove('hidden');
+  if (errorMessage) {
+    errorMessage.textContent = message;
+    errorMessage.classList.remove('hidden');
+  }
+  console.error('Error:', message);
 }
 
 function hideError() {
-  errorMessage.classList.add('hidden');
+  if (errorMessage) errorMessage.classList.add('hidden');
 }
 
 function showResults() {
-  resultsContainer.classList.remove('hidden');
+  if (resultsContainer) resultsContainer.classList.remove('hidden');
 }
 
 function hideResults() {
-  resultsContainer.classList.add('hidden');
+  if (resultsContainer) resultsContainer.classList.add('hidden');
 }
 
 function showNoResults() {
-  resultsList.innerHTML = `
-    <div class="no-results">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <h3>No subtitles found</h3>
-      <p>Try a different search term or language filter.</p>
-    </div>
-  `;
+  if (resultsList) {
+    resultsList.innerHTML = `
+      <div class="no-results">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <h3>No subtitles found</h3>
+        <p>Try a different search term or language filter.</p>
+      </div>
+    `;
+  }
   showResults();
 }
 
@@ -1394,49 +1396,113 @@ function formatNumber(num) {
 
 // Toggle series inputs visibility
 function toggleSeriesInputs() {
+  if (!typeSeries || !seriesInputs) return;
   if (typeSeries.checked) {
     seriesInputs.classList.remove('hidden');
   } else {
     seriesInputs.classList.add('hidden');
-    seasonInput.value = '';
-    episodeInput.value = '';
+    if (seasonInput) seasonInput.value = '';
+    if (episodeInput) episodeInput.value = '';
   }
 }
 
-// Event listeners
-typeMovie.addEventListener('change', toggleSeriesInputs);
-typeSeries.addEventListener('change', toggleSeriesInputs);
-
-searchBtn.addEventListener('click', () => {
-  const query = searchInput.value.trim();
-  if (!query) {
-    showError('Please enter a search term');
+// Initialize - Wait for DOM to be ready
+function initSubtitleSearch() {
+  console.log('Initializing Subtitle Search App...');
+  
+  // Get DOM elements
+  searchInput = document.getElementById('search-input');
+  languageFilter = document.getElementById('language-filter');
+  searchBtn = document.getElementById('search-btn');
+  loading = document.getElementById('loading');
+  errorMessage = document.getElementById('error-message');
+  resultsContainer = document.getElementById('results-container');
+  resultsList = document.getElementById('results-list');
+  typeMovie = document.getElementById('type-movie');
+  typeSeries = document.getElementById('type-series');
+  seriesInputs = document.getElementById('series-inputs');
+  seasonInput = document.getElementById('season-input');
+  episodeInput = document.getElementById('episode-input');
+  
+  // Check if all required elements exist
+  if (!searchInput) {
+    console.error('searchInput not found!');
     return;
   }
-
-  const contentType = typeSeries.checked ? 'series' : 'movie';
-  const season = typeSeries.checked && seasonInput.value ? parseInt(seasonInput.value) : null;
-  const episode = typeSeries.checked && episodeInput.value ? parseInt(episodeInput.value) : null;
-
-  if (typeSeries.checked && (!season || !episode)) {
-    showError('Please enter both season and episode numbers for TV series');
+  if (!searchBtn) {
+    console.error('searchBtn not found!');
     return;
   }
-
-  searchSubtitles(query, languageFilter.value, contentType, season, episode);
-});
-
-searchInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    searchBtn.click();
+  if (!typeMovie) {
+    console.error('typeMovie not found!');
+    return;
   }
-});
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('Subtitle Search App initialized');
+  if (!typeSeries) {
+    console.error('typeSeries not found!');
+    return;
+  }
+  
+  console.log('All DOM elements found, attaching event listeners...');
+  
+  // Toggle series inputs visibility
   toggleSeriesInputs();
-});
+  
+  // Event listeners for type selection
+  if (typeMovie) {
+    typeMovie.addEventListener('change', toggleSeriesInputs);
+  }
+  if (typeSeries) {
+    typeSeries.addEventListener('change', toggleSeriesInputs);
+  }
+  
+  // Search button click handler
+  if (searchBtn) {
+    searchBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('Search button clicked!');
+      
+      const query = searchInput.value.trim();
+      console.log('Search query:', query);
+      
+      if (!query) {
+        showError('Please enter a search term');
+        return;
+      }
+
+      const contentType = typeSeries && typeSeries.checked ? 'series' : 'movie';
+      const season = (typeSeries && typeSeries.checked && seasonInput && seasonInput.value) ? parseInt(seasonInput.value) : null;
+      const episode = (typeSeries && typeSeries.checked && episodeInput && episodeInput.value) ? parseInt(episodeInput.value) : null;
+
+      if (typeSeries && typeSeries.checked && (!season || !episode)) {
+        showError('Please enter both season and episode numbers for TV series');
+        return;
+      }
+
+      console.log('Searching with:', { query, contentType, season, episode });
+      searchSubtitles(query, languageFilter ? languageFilter.value : '', contentType, season, episode);
+    });
+  }
+  
+  // Enter key handler
+  if (searchInput) {
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (searchBtn) searchBtn.click();
+      }
+    });
+  }
+  
+  console.log('Subtitle Search App initialized successfully!');
+}
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSubtitleSearch);
+} else {
+  // DOM is already ready
+  initSubtitleSearch();
+}
 </script>
 
 	</div>
