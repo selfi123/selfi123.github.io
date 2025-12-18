@@ -139,8 +139,8 @@
 <meta property="og:description" content="NI8STALKER, On the hunt for the next big thing">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/redefine-og.webp">
-<meta property="article:published_time" content="2025-12-18T18:00:58.317Z">
-<meta property="article:modified_time" content="2025-12-18T18:00:58.317Z">
+<meta property="article:published_time" content="2025-12-18T18:06:49.187Z">
+<meta property="article:modified_time" content="2025-12-18T18:06:49.187Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/redefine-og.webp">
@@ -641,6 +641,17 @@
     <p class="subtitle-description">Search and download subtitles for movies and TV series. Filter by language to find the perfect subtitle file.</p>
     
     <div class="search-section">
+      <div class="type-selection">
+        <label class="type-option">
+          <input type="radio" name="content-type" value="movie" id="type-movie" checked>
+          <span><i class="fa-solid fa-film"></i> Movie</span>
+        </label>
+        <label class="type-option">
+          <input type="radio" name="content-type" value="series" id="type-series">
+          <span><i class="fa-solid fa-tv"></i> TV Series</span>
+        </label>
+      </div>
+      
       <div class="search-input-group">
         <input 
           type="text" 
@@ -648,6 +659,22 @@
           placeholder="Enter movie or TV series name (e.g., Inception, Breaking Bad)"
           class="search-input"
         />
+        <div id="series-inputs" class="series-inputs hidden">
+          <input 
+            type="number" 
+            id="season-input" 
+            placeholder="Season" 
+            min="1" 
+            class="season-episode-input"
+          />
+          <input 
+            type="number" 
+            id="episode-input" 
+            placeholder="Episode" 
+            min="1" 
+            class="season-episode-input"
+          />
+        </div>
         <select id="language-filter" class="language-select">
           <option value="">All Languages</option>
           <option value="eng">English</option>
@@ -710,12 +737,74 @@
   margin-bottom: 2rem;
 }
 
+.type-selection {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.type-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem 1.5rem;
+  border: 2px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  transition: all 0.3s;
+  background: var(--background-color, #fff);
+}
+
+.type-option:hover {
+  border-color: var(--primary-color, #A31F34);
+}
+
+.type-option input[type="radio"] {
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+.type-option input[type="radio"]:checked + span {
+  color: var(--primary-color, #A31F34);
+  font-weight: bold;
+}
+
+.type-option:has(input[type="radio"]:checked) {
+  border-color: var(--primary-color, #A31F34);
+  background: var(--primary-color-light, rgba(163, 31, 52, 0.1));
+}
+
+.type-option span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .search-input-group {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+}
+
+.series-inputs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.season-episode-input {
+  width: 100px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  transition: border-color 0.3s;
+}
+
+.season-episode-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #A31F34);
 }
 
 .search-input {
@@ -930,8 +1019,27 @@
 }
 
 @media (max-width: 768px) {
+  .type-selection {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .type-option {
+    width: 100%;
+    justify-content: center;
+  }
+  
   .search-input-group {
     flex-direction: column;
+  }
+  
+  .series-inputs {
+    width: 100%;
+    flex-direction: row;
+  }
+  
+  .season-episode-input {
+    flex: 1;
   }
   
   .search-input,
@@ -969,6 +1077,11 @@ const loading = document.getElementById('loading');
 const errorMessage = document.getElementById('error-message');
 const resultsContainer = document.getElementById('results-container');
 const resultsList = document.getElementById('results-list');
+const typeMovie = document.getElementById('type-movie');
+const typeSeries = document.getElementById('type-series');
+const seriesInputs = document.getElementById('series-inputs');
+const seasonInput = document.getElementById('season-input');
+const episodeInput = document.getElementById('episode-input');
 
 // Language code to name mapping
 const languageNames = {
@@ -990,7 +1103,7 @@ const languageNames = {
 };
 
 // Search function
-async function searchSubtitles(query, language = '') {
+async function searchSubtitles(query, language = '', contentType = 'movie', season = null, episode = null) {
   try {
     showLoading();
     hideError();
@@ -1004,20 +1117,57 @@ async function searchSubtitles(query, language = '') {
       params.append('languages', language);
     }
 
-    const response = await fetch(`${API_BASE_URL}/subtitles?${params.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Api-Key': API_KEY,
-        'Content-Type': 'application/json',
-        'User-Agent': 'SubtitleSearchApp/1.0'
+    // Add type filter
+    if (contentType === 'series') {
+      params.append('type', 'episode');
+      if (season) {
+        params.append('season_number', season);
       }
-    });
+      if (episode) {
+        params.append('episode_number', episode);
+      }
+    } else {
+      params.append('type', 'movie');
+    }
+
+    const apiUrl = `${API_BASE_URL}/subtitles?${params.toString()}`;
+    
+    console.log('Searching with URL:', apiUrl);
+    console.log('Parameters:', params.toString());
+
+    // Try direct API call first
+    let response;
+    try {
+      response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Api-Key': API_KEY,
+          'Accept': 'application/json'
+        }
+      });
+    } catch (corsError) {
+      // If CORS error, try with proxy
+      console.log('Direct API failed, trying with CORS proxy...');
+      const proxyUrl = 'https://corsproxy.io/?';
+      response = await fetch(proxyUrl + encodeURIComponent(apiUrl), {
+        method: 'GET',
+        headers: {
+          'Api-Key': API_KEY,
+          'Accept': 'application/json'
+        }
+      });
+    }
+
+    console.log('Response status:', response.status);
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error(`API Error: ${response.status} ${response.statusText}. ${errorText.substring(0, 100)}`);
     }
 
     const data = await response.json();
+    console.log('Response data:', data);
     
     hideLoading();
     
@@ -1028,8 +1178,12 @@ async function searchSubtitles(query, language = '') {
     }
   } catch (error) {
     hideLoading();
-    showError(`Error searching subtitles: ${error.message}`);
-    console.error('Search error:', error);
+    console.error('Search error details:', error);
+    let errorMsg = `Error searching subtitles: ${error.message}`;
+    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+      errorMsg += '. This might be a CORS issue. Please check the browser console for more details.';
+    }
+    showError(errorMsg);
   }
 }
 
@@ -1056,10 +1210,14 @@ function createSubtitleItem(subtitle) {
   const downloadCount = attributes.download_count || 0;
   const fileId = subtitle.id;
   const fileName = attributes.files?.[0]?.file_name || 'subtitle.srt';
+  const featureDetails = attributes.feature_details || {};
+  const isEpisode = attributes.feature_type === 'episode' || attributes.parent_feature_id;
+  const seasonNum = attributes.season_number || featureDetails.season_number;
+  const episodeNum = attributes.episode_number || featureDetails.episode_number;
   
   item.innerHTML = `
     <div class="subtitle-header">
-      <h3 class="subtitle-title">${escapeHtml(attributes.feature_details?.title || 'Unknown Title')}</h3>
+      <h3 class="subtitle-title">${escapeHtml(featureDetails.title || attributes.title || 'Unknown Title')}</h3>
       <div class="subtitle-meta">
         <span class="meta-badge">
           <i class="fa-solid fa-language"></i> ${languageNames[language] || language}
@@ -1067,26 +1225,34 @@ function createSubtitleItem(subtitle) {
         <span class="meta-badge">
           <i class="fa-solid fa-download"></i> ${formatNumber(downloadCount)} downloads
         </span>
-        ${attributes.feature_details?.year ? `
+        ${isEpisode && seasonNum && episodeNum ? `
           <span class="meta-badge">
-            <i class="fa-solid fa-calendar"></i> ${attributes.feature_details.year}
+            <i class="fa-solid fa-tv"></i> S${seasonNum}E${episodeNum}
+          </span>
+        ` : ''}
+        ${featureDetails.year ? `
+          <span class="meta-badge">
+            <i class="fa-solid fa-calendar"></i> ${featureDetails.year}
           </span>
         ` : ''}
       </div>
     </div>
     <div class="subtitle-info">
+      ${isEpisode && seasonNum && episodeNum ? `
+        <p><strong>Season:</strong> ${seasonNum} | <strong>Episode:</strong> ${episodeNum}</p>
+      ` : ''}
       <p><strong>Release:</strong> ${escapeHtml(release)}</p>
       <p><strong>File:</strong> ${escapeHtml(fileName)}</p>
-      ${attributes.feature_details?.imdb_id ? `
-        <p><strong>IMDB ID:</strong> ${attributes.feature_details.imdb_id}</p>
+      ${featureDetails.imdb_id ? `
+        <p><strong>IMDB ID:</strong> ${featureDetails.imdb_id}</p>
       ` : ''}
     </div>
     <div class="subtitle-actions">
       <button class="download-btn" onclick="downloadSubtitle('${fileId}', '${escapeHtml(fileName)}')">
         <i class="fa-solid fa-download"></i> Download
       </button>
-      ${attributes.feature_details?.imdb_id ? `
-        <a href="https://www.imdb.com/title/${attributes.feature_details.imdb_id}" 
+      ${featureDetails.imdb_id ? `
+        <a href="https://www.imdb.com/title/${featureDetails.imdb_id}" 
            target="_blank" 
            rel="noopener" 
            class="info-btn">
@@ -1106,17 +1272,37 @@ async function downloadSubtitle(fileId, fileName) {
     button.disabled = true;
     button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Downloading...';
     
-    const response = await fetch(`${API_BASE_URL}/download`, {
-      method: 'POST',
-      headers: {
-        'Api-Key': API_KEY,
-        'Content-Type': 'application/json',
-        'User-Agent': 'SubtitleSearchApp/1.0'
-      },
-      body: JSON.stringify({
-        file_id: fileId
-      })
+    const apiUrl = `${API_BASE_URL}/download`;
+    const requestBody = JSON.stringify({
+      file_id: fileId
     });
+    
+    // Try direct API call first
+    let response;
+    try {
+      response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Api-Key': API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: requestBody
+      });
+    } catch (corsError) {
+      // If CORS error, try with proxy
+      console.log('Direct download API failed, trying with CORS proxy...');
+      const proxyUrl = 'https://corsproxy.io/?';
+      response = await fetch(proxyUrl + encodeURIComponent(apiUrl), {
+        method: 'POST',
+        headers: {
+          'Api-Key': API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: requestBody
+      });
+    }
 
     if (!response.ok) {
       throw new Error(`Download failed: ${response.status} ${response.statusText}`);
@@ -1125,13 +1311,14 @@ async function downloadSubtitle(fileId, fileName) {
     const data = await response.json();
     
     // Get download link from response
-    const downloadLink = data.link || data.url;
+    const downloadLink = data.link || data.url || (data.attributes && data.attributes.url);
     
     if (downloadLink) {
       // Create temporary link and trigger download
       const link = document.createElement('a');
       link.href = downloadLink;
       link.download = fileName;
+      link.target = '_blank';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1142,7 +1329,7 @@ async function downloadSubtitle(fileId, fileName) {
         button.innerHTML = '<i class="fa-solid fa-download"></i> Download';
       }, 2000);
     } else {
-      throw new Error('No download link received');
+      throw new Error('No download link received. Response: ' + JSON.stringify(data));
     }
   } catch (error) {
     showError(`Error downloading subtitle: ${error.message}`);
@@ -1205,14 +1392,38 @@ function formatNumber(num) {
   return num.toString();
 }
 
+// Toggle series inputs visibility
+function toggleSeriesInputs() {
+  if (typeSeries.checked) {
+    seriesInputs.classList.remove('hidden');
+  } else {
+    seriesInputs.classList.add('hidden');
+    seasonInput.value = '';
+    episodeInput.value = '';
+  }
+}
+
 // Event listeners
+typeMovie.addEventListener('change', toggleSeriesInputs);
+typeSeries.addEventListener('change', toggleSeriesInputs);
+
 searchBtn.addEventListener('click', () => {
   const query = searchInput.value.trim();
-  if (query) {
-    searchSubtitles(query, languageFilter.value);
-  } else {
+  if (!query) {
     showError('Please enter a search term');
+    return;
   }
+
+  const contentType = typeSeries.checked ? 'series' : 'movie';
+  const season = typeSeries.checked && seasonInput.value ? parseInt(seasonInput.value) : null;
+  const episode = typeSeries.checked && episodeInput.value ? parseInt(episodeInput.value) : null;
+
+  if (typeSeries.checked && (!season || !episode)) {
+    showError('Please enter both season and episode numbers for TV series');
+    return;
+  }
+
+  searchSubtitles(query, languageFilter.value, contentType, season, episode);
 });
 
 searchInput.addEventListener('keypress', (e) => {
@@ -1224,6 +1435,7 @@ searchInput.addEventListener('keypress', (e) => {
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Subtitle Search App initialized');
+  toggleSeriesInputs();
 });
 </script>
 
