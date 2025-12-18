@@ -139,8 +139,8 @@
 <meta property="og:description" content="NI8STALKER, On the hunt for the next big thing">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/redefine-og.webp">
-<meta property="article:published_time" content="2025-12-18T18:38:43.320Z">
-<meta property="article:modified_time" content="2025-12-18T18:38:43.320Z">
+<meta property="article:published_time" content="2025-12-18T19:01:40.978Z">
+<meta property="article:modified_time" content="2025-12-18T19:01:40.978Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/redefine-og.webp">
@@ -1088,7 +1088,6 @@
 
 <script>
 // API Configuration
-const API_KEY = 'qo2wQs1PXwIHJsXvIiWXu1ZbVjaboPh6';
 const API_BASE_URL = 'https://api.opensubtitles.com/api/v1';
 
 // Proxy Configuration
@@ -1193,26 +1192,7 @@ async function searchSubtitles(query, language = '', contentType = 'movie', seas
           'Accept': 'application/json'
         }
       });
-    } else {
-      // Try direct call (will fail with 403 due to User-Agent requirement)
-      console.log('No proxy configured - trying direct API call (will likely fail)...');
-      console.log('To fix: Set PROXY_BASE_URL or deploy proxy-server.js');
-      
-      response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Api-Key': API_KEY,
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (response.status === 403) {
-        // Show proxy warning
-        const warning = document.getElementById('proxy-warning');
-        if (warning) warning.classList.remove('hidden');
-        throw new Error('403 Forbidden: User-Agent header required. Please set up the proxy server (see proxy-server.js) or configure PROXY_BASE_URL in the code.');
-      }
-    }
+    } 
 
     console.log('Response status:', response.status);
 
@@ -1350,26 +1330,6 @@ window.downloadSubtitle = async function(fileId, fileName) {
           file_id: fileId
         })
       });
-    } else {
-      // Try direct call (will fail with 403)
-      const apiUrl = `${API_BASE_URL}/download`;
-      console.log('No proxy configured - trying direct download (will likely fail)...');
-      
-      response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Api-Key': API_KEY,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          file_id: fileId
-        })
-      });
-      
-      if (response.status === 403) {
-        throw new Error('403 Forbidden: User-Agent header required. Please set up the proxy server.');
-      }
     }
 
     if (!response.ok) {
@@ -1383,13 +1343,25 @@ window.downloadSubtitle = async function(fileId, fileName) {
     
     if (downloadLink) {
       // Create temporary link and trigger download
-      const link = document.createElement('a');
-      link.href = downloadLink;
-      link.download = fileName;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+// Fetch subtitle file as blob
+const fileResponse = await fetch(downloadLink);
+const blob = await fileResponse.blob();
+
+// Create local object URL
+const blobUrl = window.URL.createObjectURL(blob);
+const safeFileName = fileName.endsWith('.srt') ? fileName : `${fileName}.srt`;
+
+// Force download
+const a = document.createElement('a');
+a.href = blobUrl;
+a.download = safeFileName;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+
+// Cleanup
+window.URL.revokeObjectURL(blobUrl);
+
       
       button.innerHTML = '<i class="fa-solid fa-check"></i> Downloaded';
       setTimeout(() => {

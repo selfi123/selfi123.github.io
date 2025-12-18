@@ -3,7 +3,7 @@
 // to keep the API key secure. This file is for reference.
 
 const SUBTITLE_API_CONFIG = {
-  apiKey: 'qo2wQs1PXwIHJsXvIiWXu1ZbVjaboPh6',
+  apiKey: '',
   apiBaseUrl: 'https://api.opensubtitles.com/api/v1'
 };
 
