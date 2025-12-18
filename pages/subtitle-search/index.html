@@ -139,8 +139,8 @@
 <meta property="og:description" content="NI8STALKER, On the hunt for the next big thing">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/redefine-og.webp">
-<meta property="article:published_time" content="2025-12-18T17:43:17.128Z">
-<meta property="article:modified_time" content="2025-12-18T17:43:17.128Z">
+<meta property="article:published_time" content="2025-12-18T18:00:58.317Z">
+<meta property="article:modified_time" content="2025-12-18T18:00:58.317Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/redefine-og.webp">
@@ -634,55 +634,55 @@
 		<h1>Subtitle Search</h1>
 		
 
-		<div id="subtitle-search-app">
+		
+<div id="subtitle-search-app">
   <div class="subtitle-search-container">
     <h1>🎬 Subtitle Search & Download</h1>
     <p class="subtitle-description">Search and download subtitles for movies and TV series. Filter by language to find the perfect subtitle file.</p>
     
-<pre><code>&lt;div class=&quot;search-section&quot;&gt;
-  &lt;div class=&quot;search-input-group&quot;&gt;
-    &lt;input 
-      type=&quot;text&quot; 
-      id=&quot;search-input&quot; 
-      placeholder=&quot;Enter movie or TV series name (e.g., Inception, Breaking Bad)&quot;
-      class=&quot;search-input&quot;
-    /&gt;
-    &lt;select id=&quot;language-filter&quot; class=&quot;language-select&quot;&gt;
-      &lt;option value=&quot;&quot;&gt;All Languages&lt;/option&gt;
-      &lt;option value=&quot;eng&quot;&gt;English&lt;/option&gt;
-      &lt;option value=&quot;spa&quot;&gt;Spanish&lt;/option&gt;
-      &lt;option value=&quot;fre&quot;&gt;French&lt;/option&gt;
-      &lt;option value=&quot;ger&quot;&gt;German&lt;/option&gt;
-      &lt;option value=&quot;ita&quot;&gt;Italian&lt;/option&gt;
-      &lt;option value=&quot;por&quot;&gt;Portuguese&lt;/option&gt;
-      &lt;option value=&quot;rus&quot;&gt;Russian&lt;/option&gt;
-      &lt;option value=&quot;chi&quot;&gt;Chinese&lt;/option&gt;
-      &lt;option value=&quot;jpn&quot;&gt;Japanese&lt;/option&gt;
-      &lt;option value=&quot;kor&quot;&gt;Korean&lt;/option&gt;
-      &lt;option value=&quot;ara&quot;&gt;Arabic&lt;/option&gt;
-      &lt;option value=&quot;hin&quot;&gt;Hindi&lt;/option&gt;
-      &lt;option value=&quot;dut&quot;&gt;Dutch&lt;/option&gt;
-      &lt;option value=&quot;pol&quot;&gt;Polish&lt;/option&gt;
-      &lt;option value=&quot;tur&quot;&gt;Turkish&lt;/option&gt;
-    &lt;/select&gt;
-    &lt;button id=&quot;search-btn&quot; class=&quot;search-button&quot;&gt;
-      &lt;i class=&quot;fa-solid fa-search&quot;&gt;&lt;/i&gt; Search
-    &lt;/button&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+    <div class="search-section">
+      <div class="search-input-group">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Enter movie or TV series name (e.g., Inception, Breaking Bad)"
+          class="search-input"
+        />
+        <select id="language-filter" class="language-select">
+          <option value="">All Languages</option>
+          <option value="eng">English</option>
+          <option value="spa">Spanish</option>
+          <option value="fre">French</option>
+          <option value="ger">German</option>
+          <option value="ita">Italian</option>
+          <option value="por">Portuguese</option>
+          <option value="rus">Russian</option>
+          <option value="chi">Chinese</option>
+          <option value="jpn">Japanese</option>
+          <option value="kor">Korean</option>
+          <option value="ara">Arabic</option>
+          <option value="hin">Hindi</option>
+          <option value="dut">Dutch</option>
+          <option value="pol">Polish</option>
+          <option value="tur">Turkish</option>
+        </select>
+        <button id="search-btn" class="search-button">
+          <i class="fa-solid fa-search"></i> Search
+        </button>
+      </div>
+    </div>
 
-&lt;div id=&quot;loading&quot; class=&quot;loading hidden&quot;&gt;
-  &lt;div class=&quot;spinner&quot;&gt;&lt;/div&gt;
-  &lt;p&gt;Searching subtitles...&lt;/p&gt;
-&lt;/div&gt;
+    <div id="loading" class="loading hidden">
+      <div class="spinner"></div>
+      <p>Searching subtitles...</p>
+    </div>
 
-&lt;div id=&quot;error-message&quot; class=&quot;error-message hidden&quot;&gt;&lt;/div&gt;
+    <div id="error-message" class="error-message hidden"></div>
 
-&lt;div id=&quot;results-container&quot; class=&quot;results-container hidden&quot;&gt;
-  &lt;h2&gt;Search Results&lt;/h2&gt;
-  &lt;div id=&quot;results-list&quot; class=&quot;results-list&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;
-</code></pre>
+    <div id="results-container" class="results-container hidden">
+      <h2>Search Results</h2>
+      <div id="results-list" class="results-list"></div>
+    </div>
   </div>
 </div>
 
