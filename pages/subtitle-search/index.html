@@ -123,7 +123,7 @@
     
     <!--- Seo Part-->
     
-    <link rel="canonical" href="http://example.com/tags/restic/"/>
+    <link rel="canonical" href="http://example.com/pages/subtitle-search/"/>
     <meta name="robots" content="index,follow">
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
@@ -133,12 +133,14 @@
         
         <meta name="description" content="NI8STALKER, On the hunt for the next big thing">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/tags/restic/index.html">
+<meta property="og:title" content="Subtitle Search">
+<meta property="og:url" content="http://example.com/pages/subtitle-search/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="NI8STALKER, On the hunt for the next big thing">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/redefine-og.webp">
+<meta property="article:published_time" content="2025-12-18T17:43:17.128Z">
+<meta property="article:modified_time" content="2025-12-18T17:43:17.128Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/redefine-og.webp">
@@ -153,7 +155,7 @@
     
     <title>
         
-            Tag: restic | NI8STALKER
+            Subtitle Search | NI8STALKER
         
     </title>
 
@@ -626,43 +628,605 @@
 	
 
 	
-	<div class="tag-name">
-    <i class="fa-solid fa-tag"></i>&nbsp;restic
-</div>
-<div class="tag-post-list">
-    
-<div class="archive-list-container">
-    
-        <section class="archive-item mb-spacing-unit last:mb-0">
-            <div class="archive-item-header flex flex-row items-center mb-2">
-                <span class="archive-year font-semibold text-3xl mr-2">2025</span>
-                <span class="archive-year-post-count text-xs md:text-sm font-bold rounded-small bg-third-background-color py-[2px] px-[10px] border border-border-color">1</span>
-            </div>
-            
-            <ul class="article-list pl-0 md:pl-8 text-lg leading-[1.5]">
-                
-                    
-                    
-                         <!-- Close the previous LI if not the first item -->
-                        <li class="article-item space-y-2 px-6 pt-10 pb-2 text-xl relative border-l-2 border-border-color" date-is='06-23'>
-                    
-                    <a href="/2025/06/23/hackthebox-artificial-2025/" class="block w-fit">
-                        <span class="article-title my-0.5 text-2xl">Hack The Box - Artificial (2025) Writeup</span>
-                    </a>
-                    
-                
-                </li> <!-- Ensure the last item is properly closed -->
-            </ul>
-        </section>
-    
-</div>
-</div>
-	
 
 	<div class="page-template-content markdown-body">
 		
-
+		<h1>Subtitle Search</h1>
 		
+
+		<div id="subtitle-search-app">
+  <div class="subtitle-search-container">
+    <h1>🎬 Subtitle Search & Download</h1>
+    <p class="subtitle-description">Search and download subtitles for movies and TV series. Filter by language to find the perfect subtitle file.</p>
+    
+<pre><code>&lt;div class=&quot;search-section&quot;&gt;
+  &lt;div class=&quot;search-input-group&quot;&gt;
+    &lt;input 
+      type=&quot;text&quot; 
+      id=&quot;search-input&quot; 
+      placeholder=&quot;Enter movie or TV series name (e.g., Inception, Breaking Bad)&quot;
+      class=&quot;search-input&quot;
+    /&gt;
+    &lt;select id=&quot;language-filter&quot; class=&quot;language-select&quot;&gt;
+      &lt;option value=&quot;&quot;&gt;All Languages&lt;/option&gt;
+      &lt;option value=&quot;eng&quot;&gt;English&lt;/option&gt;
+      &lt;option value=&quot;spa&quot;&gt;Spanish&lt;/option&gt;
+      &lt;option value=&quot;fre&quot;&gt;French&lt;/option&gt;
+      &lt;option value=&quot;ger&quot;&gt;German&lt;/option&gt;
+      &lt;option value=&quot;ita&quot;&gt;Italian&lt;/option&gt;
+      &lt;option value=&quot;por&quot;&gt;Portuguese&lt;/option&gt;
+      &lt;option value=&quot;rus&quot;&gt;Russian&lt;/option&gt;
+      &lt;option value=&quot;chi&quot;&gt;Chinese&lt;/option&gt;
+      &lt;option value=&quot;jpn&quot;&gt;Japanese&lt;/option&gt;
+      &lt;option value=&quot;kor&quot;&gt;Korean&lt;/option&gt;
+      &lt;option value=&quot;ara&quot;&gt;Arabic&lt;/option&gt;
+      &lt;option value=&quot;hin&quot;&gt;Hindi&lt;/option&gt;
+      &lt;option value=&quot;dut&quot;&gt;Dutch&lt;/option&gt;
+      &lt;option value=&quot;pol&quot;&gt;Polish&lt;/option&gt;
+      &lt;option value=&quot;tur&quot;&gt;Turkish&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;button id=&quot;search-btn&quot; class=&quot;search-button&quot;&gt;
+      &lt;i class=&quot;fa-solid fa-search&quot;&gt;&lt;/i&gt; Search
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div id=&quot;loading&quot; class=&quot;loading hidden&quot;&gt;
+  &lt;div class=&quot;spinner&quot;&gt;&lt;/div&gt;
+  &lt;p&gt;Searching subtitles...&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div id=&quot;error-message&quot; class=&quot;error-message hidden&quot;&gt;&lt;/div&gt;
+
+&lt;div id=&quot;results-container&quot; class=&quot;results-container hidden&quot;&gt;
+  &lt;h2&gt;Search Results&lt;/h2&gt;
+  &lt;div id=&quot;results-list&quot; class=&quot;results-list&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+  </div>
+</div>
+
+<style>
+.subtitle-search-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.subtitle-search-container h1 {
+  text-align: center;
+  margin-bottom: 0.5rem;
+  color: var(--primary-color, #A31F34);
+}
+
+.subtitle-description {
+  text-align: center;
+  color: var(--text-color-secondary, #666);
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.search-section {
+  margin-bottom: 2rem;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 250px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  transition: border-color 0.3s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #A31F34);
+}
+
+.language-select {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  background: var(--background-color, #fff);
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.language-select:focus {
+  outline: none;
+  border-color: var(--primary-color, #A31F34);
+}
+
+.search-button {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  background: var(--primary-color, #A31F34);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-button:hover {
+  background: var(--primary-color-dark, #8a1a2a);
+  transform: translateY(-2px);
+}
+
+.search-button:active {
+  transform: translateY(0);
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.spinner {
+  border: 4px solid var(--border-color, #f3f3f3);
+  border-top: 4px solid var(--primary-color, #A31F34);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border-left: 4px solid #c33;
+}
+
+.results-container {
+  margin-top: 2rem;
+}
+
+.results-container h2 {
+  margin-bottom: 1.5rem;
+  color: var(--text-color, #333);
+}
+
+.results-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.subtitle-item {
+  background: var(--card-background, #fff);
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+
+.subtitle-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.subtitle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.subtitle-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-color, #333);
+  margin: 0;
+}
+
+.subtitle-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: var(--text-color-secondary, #666);
+}
+
+.meta-badge {
+  background: var(--third-background-color, #f5f5f5);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.subtitle-info {
+  margin-bottom: 1rem;
+  color: var(--text-color-secondary, #666);
+  line-height: 1.6;
+}
+
+.subtitle-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.download-btn {
+  padding: 0.5rem 1.5rem;
+  background: var(--primary-color, #A31F34);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.download-btn:hover {
+  background: var(--primary-color-dark, #8a1a2a);
+}
+
+.download-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.info-btn {
+  padding: 0.5rem 1.5rem;
+  background: transparent;
+  color: var(--primary-color, #A31F34);
+  border: 2px solid var(--primary-color, #A31F34);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-btn:hover {
+  background: var(--primary-color, #A31F34);
+  color: white;
+}
+
+.hidden {
+  display: none;
+}
+
+.no-results {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-color-secondary, #666);
+}
+
+.no-results i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--border-color, #ddd);
+}
+
+@media (max-width: 768px) {
+  .search-input-group {
+    flex-direction: column;
+  }
+  
+  .search-input,
+  .language-select,
+  .search-button {
+    width: 100%;
+  }
+  
+  .subtitle-header {
+    flex-direction: column;
+  }
+  
+  .subtitle-actions {
+    flex-direction: column;
+  }
+  
+  .download-btn,
+  .info-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+</style>
+
+<script>
+// API Configuration
+const API_KEY = 'qo2wQs1PXwIHJsXvIiWXu1ZbVjaboPh6';
+const API_BASE_URL = 'https://api.opensubtitles.com/api/v1';
+
+// DOM Elements
+const searchInput = document.getElementById('search-input');
+const languageFilter = document.getElementById('language-filter');
+const searchBtn = document.getElementById('search-btn');
+const loading = document.getElementById('loading');
+const errorMessage = document.getElementById('error-message');
+const resultsContainer = document.getElementById('results-container');
+const resultsList = document.getElementById('results-list');
+
+// Language code to name mapping
+const languageNames = {
+  'eng': 'English',
+  'spa': 'Spanish',
+  'fre': 'French',
+  'ger': 'German',
+  'ita': 'Italian',
+  'por': 'Portuguese',
+  'rus': 'Russian',
+  'chi': 'Chinese',
+  'jpn': 'Japanese',
+  'kor': 'Korean',
+  'ara': 'Arabic',
+  'hin': 'Hindi',
+  'dut': 'Dutch',
+  'pol': 'Polish',
+  'tur': 'Turkish'
+};
+
+// Search function
+async function searchSubtitles(query, language = '') {
+  try {
+    showLoading();
+    hideError();
+    hideResults();
+
+    const params = new URLSearchParams({
+      query: query
+    });
+
+    if (language) {
+      params.append('languages', language);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/subtitles?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Api-Key': API_KEY,
+        'Content-Type': 'application/json',
+        'User-Agent': 'SubtitleSearchApp/1.0'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    hideLoading();
+    
+    if (data.data && data.data.length > 0) {
+      displayResults(data.data);
+    } else {
+      showNoResults();
+    }
+  } catch (error) {
+    hideLoading();
+    showError(`Error searching subtitles: ${error.message}`);
+    console.error('Search error:', error);
+  }
+}
+
+// Display search results
+function displayResults(subtitles) {
+  resultsList.innerHTML = '';
+  
+  subtitles.forEach(subtitle => {
+    const item = createSubtitleItem(subtitle);
+    resultsList.appendChild(item);
+  });
+  
+  showResults();
+}
+
+// Create subtitle item element
+function createSubtitleItem(subtitle) {
+  const item = document.createElement('div');
+  item.className = 'subtitle-item';
+  
+  const attributes = subtitle.attributes || {};
+  const language = attributes.language || 'Unknown';
+  const release = attributes.release || 'N/A';
+  const downloadCount = attributes.download_count || 0;
+  const fileId = subtitle.id;
+  const fileName = attributes.files?.[0]?.file_name || 'subtitle.srt';
+  
+  item.innerHTML = `
+    <div class="subtitle-header">
+      <h3 class="subtitle-title">${escapeHtml(attributes.feature_details?.title || 'Unknown Title')}</h3>
+      <div class="subtitle-meta">
+        <span class="meta-badge">
+          <i class="fa-solid fa-language"></i> ${languageNames[language] || language}
+        </span>
+        <span class="meta-badge">
+          <i class="fa-solid fa-download"></i> ${formatNumber(downloadCount)} downloads
+        </span>
+        ${attributes.feature_details?.year ? `
+          <span class="meta-badge">
+            <i class="fa-solid fa-calendar"></i> ${attributes.feature_details.year}
+          </span>
+        ` : ''}
+      </div>
+    </div>
+    <div class="subtitle-info">
+      <p><strong>Release:</strong> ${escapeHtml(release)}</p>
+      <p><strong>File:</strong> ${escapeHtml(fileName)}</p>
+      ${attributes.feature_details?.imdb_id ? `
+        <p><strong>IMDB ID:</strong> ${attributes.feature_details.imdb_id}</p>
+      ` : ''}
+    </div>
+    <div class="subtitle-actions">
+      <button class="download-btn" onclick="downloadSubtitle('${fileId}', '${escapeHtml(fileName)}')">
+        <i class="fa-solid fa-download"></i> Download
+      </button>
+      ${attributes.feature_details?.imdb_id ? `
+        <a href="https://www.imdb.com/title/${attributes.feature_details.imdb_id}" 
+           target="_blank" 
+           rel="noopener" 
+           class="info-btn">
+          <i class="fa-solid fa-external-link"></i> View on IMDB
+        </a>
+      ` : ''}
+    </div>
+  `;
+  
+  return item;
+}
+
+// Download subtitle
+async function downloadSubtitle(fileId, fileName) {
+  try {
+    const button = event.target.closest('.download-btn');
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Downloading...';
+    
+    const response = await fetch(`${API_BASE_URL}/download`, {
+      method: 'POST',
+      headers: {
+        'Api-Key': API_KEY,
+        'Content-Type': 'application/json',
+        'User-Agent': 'SubtitleSearchApp/1.0'
+      },
+      body: JSON.stringify({
+        file_id: fileId
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Get download link from response
+    const downloadLink = data.link || data.url;
+    
+    if (downloadLink) {
+      // Create temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = downloadLink;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      button.innerHTML = '<i class="fa-solid fa-check"></i> Downloaded';
+      setTimeout(() => {
+        button.disabled = false;
+        button.innerHTML = '<i class="fa-solid fa-download"></i> Download';
+      }, 2000);
+    } else {
+      throw new Error('No download link received');
+    }
+  } catch (error) {
+    showError(`Error downloading subtitle: ${error.message}`);
+    const button = event.target.closest('.download-btn');
+    button.disabled = false;
+    button.innerHTML = '<i class="fa-solid fa-download"></i> Download';
+    console.error('Download error:', error);
+  }
+}
+
+// Utility functions
+function showLoading() {
+  loading.classList.remove('hidden');
+}
+
+function hideLoading() {
+  loading.classList.add('hidden');
+}
+
+function showError(message) {
+  errorMessage.textContent = message;
+  errorMessage.classList.remove('hidden');
+}
+
+function hideError() {
+  errorMessage.classList.add('hidden');
+}
+
+function showResults() {
+  resultsContainer.classList.remove('hidden');
+}
+
+function hideResults() {
+  resultsContainer.classList.add('hidden');
+}
+
+function showNoResults() {
+  resultsList.innerHTML = `
+    <div class="no-results">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <h3>No subtitles found</h3>
+      <p>Try a different search term or language filter.</p>
+    </div>
+  `;
+  showResults();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatNumber(num) {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  } else if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toString();
+}
+
+// Event listeners
+searchBtn.addEventListener('click', () => {
+  const query = searchInput.value.trim();
+  if (query) {
+    searchSubtitles(query, languageFilter.value);
+  } else {
+    showError('Please enter a search term');
+  }
+});
+
+searchInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    searchBtn.click();
+  }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('Subtitle Search App initialized');
+});
+</script>
+
 	</div>
 
 	<div class="page-template-comments">
@@ -671,7 +1235,7 @@
 </div>
 
 <div class="paginator">
-	<span class="page-number current">1</span>
+	
 </div>
   
 			</div>
