@@ -139,8 +139,8 @@
 <meta property="og:description" content="NI8STALKER, On the hunt for the next big thing">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/redefine-og.webp">
-<meta property="article:published_time" content="2025-12-18T19:01:40.978Z">
-<meta property="article:modified_time" content="2025-12-18T19:01:40.978Z">
+<meta property="article:published_time" content="2025-12-19T18:21:46.051Z">
+<meta property="article:modified_time" content="2025-12-19T18:21:46.051Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/redefine-og.webp">
@@ -1289,7 +1289,12 @@ function createSubtitleItem(subtitle) {
       ` : ''}
     </div>
     <div class="subtitle-actions">
-      <button class="download-btn" onclick="downloadSubtitle('${fileId}', '${escapeHtml(fileName)}')">
+<button class="download-btn"
+  onclick="downloadSubtitle(
+    '${fileId}',
+    '${escapeHtml(fileName)}',
+    '${escapeHtml(featureDetails.title || attributes.title || '')}'
+  )">
         <i class="fa-solid fa-download"></i> Download
       </button>
       ${featureDetails.imdb_id ? `
@@ -1307,7 +1312,7 @@ function createSubtitleItem(subtitle) {
 }
 
 // Download subtitle - must be global for onclick handlers
-window.downloadSubtitle = async function(fileId, fileName) {
+window.downloadSubtitle = async function(fileId, fileName, expectedTitle) {
   try {
     const button = event.target.closest('.download-btn');
     button.disabled = true;
@@ -1327,8 +1332,10 @@ window.downloadSubtitle = async function(fileId, fileName) {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          file_id: fileId
-        })
+        file_id: fileId,
+        expected_title: expectedTitle
+      })
+
       });
     }
 
