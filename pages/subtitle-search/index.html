@@ -139,8 +139,8 @@
 <meta property="og:description" content="NI8STALKER, On the hunt for the next big thing">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/redefine-og.webp">
-<meta property="article:published_time" content="2025-12-19T18:21:46.051Z">
-<meta property="article:modified_time" content="2025-12-19T18:21:46.051Z">
+<meta property="article:published_time" content="2025-12-22T08:13:17.790Z">
+<meta property="article:modified_time" content="2025-12-22T08:13:17.790Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/redefine-og.webp">
@@ -638,68 +638,48 @@
 <div id="subtitle-search-app">
   <div class="subtitle-search-container">
     <h1>🎬 Subtitle Search & Download</h1>
-    <p class="subtitle-description">Search and download subtitles for movies and TV series. Filter by language to find the perfect subtitle file.</p>
-    
-    <div id="proxy-warning" class="proxy-warning hidden">
-      <p><strong>⚠️ Setup Required:</strong> This page requires a backend proxy server to work properly due to browser security restrictions. 
-      See <code>proxy-server.js</code> and <code>README.md</code> for setup instructions.</p>
-    </div>
-    
+    <p class="subtitle-description">
+      Search subtitles by movie name or upload a video file for perfect sync.
+    </p>
+
+    <!-- SEARCH BY NAME -->
     <div class="search-section">
-      <div class="type-selection">
-        <label class="type-option">
-          <input type="radio" name="content-type" value="movie" id="type-movie" checked>
-          <span><i class="fa-solid fa-film"></i> Movie</span>
-        </label>
-        <label class="type-option">
-          <input type="radio" name="content-type" value="series" id="type-series">
-          <span><i class="fa-solid fa-tv"></i> TV Series</span>
-        </label>
-      </div>
-      
+      <h3>Search by Name (Best effort)</h3>
+
       <div class="search-input-group">
-        <input 
-          type="text" 
-          id="search-input" 
-          placeholder="Enter movie or TV series name (e.g., Inception, Breaking Bad)"
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Enter movie or TV series name"
           class="search-input"
         />
-        <div id="series-inputs" class="series-inputs hidden">
-          <input 
-            type="number" 
-            id="season-input" 
-            placeholder="Season" 
-            min="1" 
-            class="season-episode-input"
-          />
-          <input 
-            type="number" 
-            id="episode-input" 
-            placeholder="Episode" 
-            min="1" 
-            class="season-episode-input"
-          />
-        </div>
+
         <select id="language-filter" class="language-select">
           <option value="">All Languages</option>
           <option value="en">English</option>
           <option value="es">Spanish</option>
           <option value="fr">French</option>
           <option value="de">German</option>
-          <option value="it">Italian</option>
-          <option value="pt">Portuguese</option>
-          <option value="ru">Russian</option>
-          <option value="zh">Chinese</option>
-          <option value="ja">Japanese</option>
-          <option value="ko">Korean</option>
-          <option value="ar">Arabic</option>
-          <option value="hi">Hindi</option>
-          <option value="nl">Dutch</option>
-          <option value="pl">Polish</option>
-          <option value="tr">Turkish</option>
         </select>
+
         <button id="search-btn" class="search-button">
           <i class="fa-solid fa-search"></i> Search
+        </button>
+      </div>
+    </div>
+
+    <!-- SEARCH BY FILE -->
+    <div class="search-section">
+      <h3>Search by Video File (Accurate ⭐)</h3>
+
+      <div class="file-search-section">
+        <input
+          type="file"
+          id="video-file-input"
+          accept=".mp4,.mkv,.avi,.mov"
+        />
+        <button id="file-search-btn" class="search-button">
+          <i class="fa-solid fa-file-video"></i> Find Subtitles by File
         </button>
       </div>
     </div>
@@ -720,840 +700,174 @@
 
 <style>
 .subtitle-search-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 900px;
+  margin: auto;
   padding: 2rem;
 }
 
-.subtitle-search-container h1 {
-  text-align: center;
-  margin-bottom: 0.5rem;
-  color: var(--primary-color, #A31F34);
-}
-
-.subtitle-description {
-  text-align: center;
-  color: var(--text-color-secondary, #666);
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
-}
-
-.search-section {
-  margin-bottom: 2rem;
-}
-
-.type-selection {
+.search-input-group,
+.file-search-section {
   display: flex;
   gap: 1rem;
   justify-content: center;
-  margin-bottom: 1.5rem;
-}
-
-.type-option {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 0.5rem 1.5rem;
-  border: 2px solid var(--border-color, #ddd);
-  border-radius: 8px;
-  transition: all 0.3s;
-  background: var(--background-color, #fff);
-}
-
-.type-option:hover {
-  border-color: var(--primary-color, #A31F34);
-}
-
-.type-option input[type="radio"] {
-  margin-right: 0.5rem;
-  cursor: pointer;
-}
-
-.type-option input[type="radio"]:checked + span {
-  color: var(--primary-color, #A31F34);
-  font-weight: bold;
-}
-
-.type-option:has(input[type="radio"]:checked) {
-  border-color: var(--primary-color, #A31F34);
-  background: var(--primary-color-light, rgba(163, 31, 52, 0.1));
-}
-
-.type-option span {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.search-input-group {
-  display: flex;
-  gap: 1rem;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
 }
 
-.series-inputs {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.season-episode-input {
-  width: 100px;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  border: 2px solid var(--border-color, #ddd);
-  border-radius: 8px;
-  transition: border-color 0.3s;
-}
-
-.season-episode-input:focus {
-  outline: none;
-  border-color: var(--primary-color, #A31F34);
-}
-
-.search-input {
-  flex: 1;
-  min-width: 250px;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  border: 2px solid var(--border-color, #ddd);
-  border-radius: 8px;
-  transition: border-color 0.3s;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--primary-color, #A31F34);
-}
-
+.search-input,
 .language-select {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem;
   font-size: 1rem;
-  border: 2px solid var(--border-color, #ddd);
-  border-radius: 8px;
-  background: var(--background-color, #fff);
-  cursor: pointer;
-  transition: border-color 0.3s;
-}
-
-.language-select:focus {
-  outline: none;
-  border-color: var(--primary-color, #A31F34);
 }
 
 .search-button {
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
-  background: var(--primary-color, #A31F34);
+  padding: 0.75rem 1.5rem;
+  background: #a31f34;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .search-button:hover {
-  background: var(--primary-color-dark, #8a1a2a);
-  transform: translateY(-2px);
+  background: #8a1a2a;
 }
 
-.search-button:active {
-  transform: translateY(0);
-}
-
-.loading {
-  text-align: center;
-  padding: 2rem;
-}
-
-.spinner {
-  border: 4px solid var(--border-color, #f3f3f3);
-  border-top: 4px solid var(--primary-color, #A31F34);
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-message {
-  background: #fee;
-  color: #c33;
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1rem 0;
-  border-left: 4px solid #c33;
-}
-
-.proxy-warning {
-  background: #fff3cd;
-  color: #856404;
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1rem 0;
-  border-left: 4px solid #ffc107;
-  font-size: 0.9rem;
-}
-
-.proxy-warning code {
-  background: rgba(0,0,0,0.1);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-family: monospace;
-}
-
-.results-container {
-  margin-top: 2rem;
-}
-
-.results-container h2 {
-  margin-bottom: 1.5rem;
-  color: var(--text-color, #333);
-}
-
-.results-list {
-  display: grid;
-  gap: 1rem;
-}
-
-.subtitle-item {
-  background: var(--card-background, #fff);
-  border: 1px solid var(--border-color, #ddd);
-  border-radius: 8px;
-  padding: 1.5rem;
-  transition: box-shadow 0.3s, transform 0.2s;
-}
-
-.subtitle-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.subtitle-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.subtitle-title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--text-color, #333);
-  margin: 0;
-}
-
-.subtitle-meta {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  font-size: 0.9rem;
-  color: var(--text-color-secondary, #666);
-}
-
-.meta-badge {
-  background: var(--third-background-color, #f5f5f5);
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-weight: 500;
-}
-
-.subtitle-info {
-  margin-bottom: 1rem;
-  color: var(--text-color-secondary, #666);
-  line-height: 1.6;
-}
-
-.subtitle-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.download-btn {
-  padding: 0.5rem 1.5rem;
-  background: var(--primary-color, #A31F34);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background 0.3s;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.download-btn:hover {
-  background: var(--primary-color-dark, #8a1a2a);
-}
-
-.download-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.info-btn {
-  padding: 0.5rem 1.5rem;
-  background: transparent;
-  color: var(--primary-color, #A31F34);
-  border: 2px solid var(--primary-color, #A31F34);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.info-btn:hover {
-  background: var(--primary-color, #A31F34);
-  color: white;
-}
-
+.loading,
 .hidden {
   display: none;
 }
 
-.no-results {
-  text-align: center;
-  padding: 3rem;
-  color: var(--text-color-secondary, #666);
+.spinner {
+  border: 4px solid #ddd;
+  border-top: 4px solid #a31f34;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: auto;
 }
 
-.no-results i {
-  font-size: 3rem;
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.subtitle-item {
+  border: 1px solid #ddd;
+  padding: 1rem;
   margin-bottom: 1rem;
-  color: var(--border-color, #ddd);
+  border-radius: 6px;
 }
 
-@media (max-width: 768px) {
-  .type-selection {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .type-option {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .search-input-group {
-    flex-direction: column;
-  }
-  
-  .series-inputs {
-    width: 100%;
-    flex-direction: row;
-  }
-  
-  .season-episode-input {
-    flex: 1;
-  }
-  
-  .search-input,
-  .language-select,
-  .search-button {
-    width: 100%;
-  }
-  
-  .subtitle-header {
-    flex-direction: column;
-  }
-  
-  .subtitle-actions {
-    flex-direction: column;
-  }
-  
-  .download-btn,
-  .info-btn {
-    width: 100%;
-    justify-content: center;
-  }
+.download-btn {
+  background: #a31f34;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
 }
 </style>
 
 <script>
-// API Configuration
-const API_BASE_URL = 'https://api.opensubtitles.com/api/v1';
+const PROXY_BASE_URL = 'https://subs-proxy.vercel.app/api/proxy';
 
-// Proxy Configuration
-// For local development: 'http://localhost:3001/api/proxy'
-// For production: Deploy proxy to Vercel/Netlify and set URL here
-// Example: 'https://your-subtitle-proxy.vercel.app/api/proxy'
-// 
-// To deploy proxy:
-// 1. Deploy api/proxy.js to Vercel (see DEPLOY.md)
-// 2. Update PROXY_BASE_URL below with your Vercel URL
-// 3. Regenerate and deploy your Hexo site
-const PROXY_BASE_URL = 'https://subs-proxy.vercel.app/api/proxy'; // Change this for production!
+const searchBtn = document.getElementById('search-btn');
+const fileSearchBtn = document.getElementById('file-search-btn');
+const resultsList = document.getElementById('results-list');
+const resultsContainer = document.getElementById('results-container');
+const loading = document.getElementById('loading');
+const errorMessage = document.getElementById('error-message');
 
-// DOM Elements - will be initialized when DOM is ready
-let searchInput, languageFilter, searchBtn, loading, errorMessage, resultsContainer, resultsList;
-let typeMovie, typeSeries, seriesInputs, seasonInput, episodeInput;
-
-// Language code to name mapping (ISO 639-1 codes)
-const languageNames = {
-  'en': 'English',
-  'es': 'Spanish',
-  'fr': 'French',
-  'de': 'German',
-  'it': 'Italian',
-  'pt': 'Portuguese',
-  'ru': 'Russian',
-  'zh': 'Chinese',
-  'ja': 'Japanese',
-  'ko': 'Korean',
-  'ar': 'Arabic',
-  'hi': 'Hindi',
-  'nl': 'Dutch',
-  'pl': 'Polish',
-  'tr': 'Turkish',
-  // Also support 3-letter codes for backward compatibility
-  'eng': 'English',
-  'spa': 'Spanish',
-  'fre': 'French',
-  'ger': 'German',
-  'ita': 'Italian',
-  'por': 'Portuguese',
-  'rus': 'Russian',
-  'chi': 'Chinese',
-  'jpn': 'Japanese',
-  'kor': 'Korean',
-  'ara': 'Arabic',
-  'hin': 'Hindi',
-  'dut': 'Dutch',
-  'pol': 'Polish',
-  'tur': 'Turkish'
-};
-
-// Search function
-async function searchSubtitles(query, language = '', contentType = 'movie', season = null, episode = null) {
-  try {
-    showLoading();
-    hideError();
-    hideResults();
-
-    const params = new URLSearchParams({
-      query: query
-    });
-
-    if (language) {
-      // OpenSubtitles API uses ISO 639-1 codes (2-letter)
-      // Some codes might not be supported, so we'll try and handle errors gracefully
-      params.append('languages', language.toLowerCase());
-    }
-
-    // Add type filter
-    if (contentType === 'series') {
-      params.append('type', 'episode');
-      if (season) {
-        params.append('season_number', season);
-      }
-      if (episode) {
-        params.append('episode_number', episode);
-      }
-    } else {
-      params.append('type', 'movie');
-    }
-
-    const apiUrl = `${API_BASE_URL}/subtitles?${params.toString()}`;
-    
-    console.log('Searching with URL:', apiUrl);
-    console.log('Parameters:', params.toString());
-
-    // IMPORTANT: Browsers block custom User-Agent headers in fetch requests
-    // OpenSubtitles API requires: User-Agent: "AppName v1.0.0" format
-    // Solution: Use the proxy server (proxy-server.js) that adds the User-Agent header server-side
-    
-    let response;
-    
-    if (PROXY_BASE_URL) {
-      // Use proxy server
-      const proxyUrl = `${PROXY_BASE_URL}/subtitles?${params.toString()}`;
-      console.log('Making request through proxy to:', proxyUrl);
-      
-      response = await fetch(proxyUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
-    } 
-
-    console.log('Response status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
-      throw new Error(`API Error: ${response.status} ${response.statusText}. ${errorText.substring(0, 100)}`);
-    }
-
-    const data = await response.json();
-    console.log('Response data:', data);
-    
-    hideLoading();
-    
-    if (data.data && data.data.length > 0) {
-      displayResults(data.data);
-    } else {
-      showNoResults();
-    }
-  } catch (error) {
-    hideLoading();
-    console.error('Search error details:', error);
-    let errorMsg = `Error searching subtitles: ${error.message}`;
-    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-      errorMsg += '. This might be a CORS issue. Please check the browser console for more details.';
-    }
-    showError(errorMsg);
-  }
-}
-
-// Display search results
-function displayResults(subtitles) {
-  if (!resultsList) {
-    console.error('resultsList not found!');
-    return;
-  }
-  
-  resultsList.innerHTML = '';
-  
-  subtitles.forEach(subtitle => {
-    const item = createSubtitleItem(subtitle);
-    resultsList.appendChild(item);
-  });
-  
-  showResults();
-}
-
-// Create subtitle item element
-function createSubtitleItem(subtitle) {
-  const item = document.createElement('div');
-  item.className = 'subtitle-item';
-  
-  const attributes = subtitle.attributes || {};
-  const language = attributes.language || 'Unknown';
-  const release = attributes.release || 'N/A';
-  const downloadCount = attributes.download_count || 0;
-  const fileId = subtitle.id;
-  const fileName = attributes.files?.[0]?.file_name || 'subtitle.srt';
-  const featureDetails = attributes.feature_details || {};
-  const isEpisode = attributes.feature_type === 'episode' || attributes.parent_feature_id;
-  const seasonNum = attributes.season_number || featureDetails.season_number;
-  const episodeNum = attributes.episode_number || featureDetails.episode_number;
-  
-  item.innerHTML = `
-    <div class="subtitle-header">
-      <h3 class="subtitle-title">${escapeHtml(featureDetails.title || attributes.title || 'Unknown Title')}</h3>
-      <div class="subtitle-meta">
-        <span class="meta-badge">
-          <i class="fa-solid fa-language"></i> ${languageNames[language] || language}
-        </span>
-        <span class="meta-badge">
-          <i class="fa-solid fa-download"></i> ${formatNumber(downloadCount)} downloads
-        </span>
-        ${isEpisode && seasonNum && episodeNum ? `
-          <span class="meta-badge">
-            <i class="fa-solid fa-tv"></i> S${seasonNum}E${episodeNum}
-          </span>
-        ` : ''}
-        ${featureDetails.year ? `
-          <span class="meta-badge">
-            <i class="fa-solid fa-calendar"></i> ${featureDetails.year}
-          </span>
-        ` : ''}
-      </div>
-    </div>
-    <div class="subtitle-info">
-      ${isEpisode && seasonNum && episodeNum ? `
-        <p><strong>Season:</strong> ${seasonNum} | <strong>Episode:</strong> ${episodeNum}</p>
-      ` : ''}
-      <p><strong>Release:</strong> ${escapeHtml(release)}</p>
-      <p><strong>File:</strong> ${escapeHtml(fileName)}</p>
-      ${featureDetails.imdb_id ? `
-        <p><strong>IMDB ID:</strong> ${featureDetails.imdb_id}</p>
-      ` : ''}
-    </div>
-    <div class="subtitle-actions">
-<button class="download-btn"
-  onclick="downloadSubtitle(
-    '${fileId}',
-    '${escapeHtml(fileName)}',
-    '${escapeHtml(featureDetails.title || attributes.title || '')}'
-  )">
-        <i class="fa-solid fa-download"></i> Download
-      </button>
-      ${featureDetails.imdb_id ? `
-        <a href="https://www.imdb.com/title/${featureDetails.imdb_id}" 
-           target="_blank" 
-           rel="noopener" 
-           class="info-btn">
-          <i class="fa-solid fa-external-link"></i> View on IMDB
-        </a>
-      ` : ''}
-    </div>
-  `;
-  
-  return item;
-}
-
-// Download subtitle - must be global for onclick handlers
-window.downloadSubtitle = async function(fileId, fileName, expectedTitle) {
-  try {
-    const button = event.target.closest('.download-btn');
-    button.disabled = true;
-    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Downloading...';
-    
-    let response;
-    
-    if (PROXY_BASE_URL) {
-      // Use proxy server
-      const proxyUrl = `${PROXY_BASE_URL}/download`;
-      console.log('Making download request through proxy to:', proxyUrl);
-      
-      response = await fetch(proxyUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-        file_id: fileId,
-        expected_title: expectedTitle
-      })
-
-      });
-    }
-
-    if (!response.ok) {
-      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    
-    // Get download link from response
-    const downloadLink = data.link || data.url || (data.attributes && data.attributes.url);
-    
-    if (downloadLink) {
-      // Create temporary link and trigger download
-// Fetch subtitle file as blob
-const fileResponse = await fetch(downloadLink);
-const blob = await fileResponse.blob();
-
-// Create local object URL
-const blobUrl = window.URL.createObjectURL(blob);
-const safeFileName = fileName.endsWith('.srt') ? fileName : `${fileName}.srt`;
-
-// Force download
-const a = document.createElement('a');
-a.href = blobUrl;
-a.download = safeFileName;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-
-// Cleanup
-window.URL.revokeObjectURL(blobUrl);
-
-      
-      button.innerHTML = '<i class="fa-solid fa-check"></i> Downloaded';
-      setTimeout(() => {
-        button.disabled = false;
-        button.innerHTML = '<i class="fa-solid fa-download"></i> Download';
-      }, 2000);
-    } else {
-      throw new Error('No download link received. Response: ' + JSON.stringify(data));
-    }
-  } catch (error) {
-    showError(`Error downloading subtitle: ${error.message}`);
-    const button = event.target.closest('.download-btn');
-    if (button) {
-      button.disabled = false;
-      button.innerHTML = '<i class="fa-solid fa-download"></i> Download';
-    }
-    console.error('Download error:', error);
-  }
-};
-
-// Utility functions
 function showLoading() {
-  if (loading) loading.classList.remove('hidden');
+  loading.classList.remove('hidden');
 }
-
 function hideLoading() {
-  if (loading) loading.classList.add('hidden');
+  loading.classList.add('hidden');
 }
-
-function showError(message) {
-  if (errorMessage) {
-    errorMessage.textContent = message;
-    errorMessage.classList.remove('hidden');
-  }
-  console.error('Error:', message);
+function showError(msg) {
+  errorMessage.textContent = msg;
+  errorMessage.classList.remove('hidden');
 }
-
-function hideError() {
-  if (errorMessage) errorMessage.classList.add('hidden');
+function clearError() {
+  errorMessage.classList.add('hidden');
 }
-
 function showResults() {
-  if (resultsContainer) resultsContainer.classList.remove('hidden');
+  resultsContainer.classList.remove('hidden');
 }
 
-function hideResults() {
-  if (resultsContainer) resultsContainer.classList.add('hidden');
-}
-
-function showNoResults() {
-  if (resultsList) {
-    resultsList.innerHTML = `
-      <div class="no-results">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <h3>No subtitles found</h3>
-        <p>Try a different search term or language filter.</p>
-      </div>
+function displayResults(subtitles) {
+  resultsList.innerHTML = '';
+  subtitles.forEach(sub => {
+    const div = document.createElement('div');
+    div.className = 'subtitle-item';
+    div.innerHTML = `
+      <p><strong>Language:</strong> ${sub.attributes.language}</p>
+      <p><strong>Release:</strong> ${sub.attributes.release || 'N/A'}</p>
+      <button class="download-btn" onclick="downloadSubtitle('${sub.id}')">
+        Download
+      </button>
     `;
-  }
+    resultsList.appendChild(div);
+  });
   showResults();
 }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+// SEARCH BY NAME
+searchBtn.onclick = async () => {
+  const query = document.getElementById('search-input').value.trim();
+  const lang = document.getElementById('language-filter').value;
 
-function formatNumber(num) {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + 'M';
-  } else if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'K';
-  }
-  return num.toString();
-}
+  if (!query) return showError('Enter movie name');
 
-// Toggle series inputs visibility
-function toggleSeriesInputs() {
-  if (!typeSeries || !seriesInputs) return;
-  if (typeSeries.checked) {
-    seriesInputs.classList.remove('hidden');
-  } else {
-    seriesInputs.classList.add('hidden');
-    if (seasonInput) seasonInput.value = '';
-    if (episodeInput) episodeInput.value = '';
-  }
-}
+  clearError();
+  showLoading();
 
-// Initialize - Wait for DOM to be ready
-function initSubtitleSearch() {
-  console.log('Initializing Subtitle Search App...');
-  
-  // Get DOM elements
-  searchInput = document.getElementById('search-input');
-  languageFilter = document.getElementById('language-filter');
-  searchBtn = document.getElementById('search-btn');
-  loading = document.getElementById('loading');
-  errorMessage = document.getElementById('error-message');
-  resultsContainer = document.getElementById('results-container');
-  resultsList = document.getElementById('results-list');
-  typeMovie = document.getElementById('type-movie');
-  typeSeries = document.getElementById('type-series');
-  seriesInputs = document.getElementById('series-inputs');
-  seasonInput = document.getElementById('season-input');
-  episodeInput = document.getElementById('episode-input');
-  
-  // Check if all required elements exist
-  if (!searchInput) {
-    console.error('searchInput not found!');
-    return;
-  }
-  if (!searchBtn) {
-    console.error('searchBtn not found!');
-    return;
-  }
-  if (!typeMovie) {
-    console.error('typeMovie not found!');
-    return;
-  }
-  if (!typeSeries) {
-    console.error('typeSeries not found!');
-    return;
-  }
-  
-  console.log('All DOM elements found, attaching event listeners...');
-  
-  // Toggle series inputs visibility
-  toggleSeriesInputs();
-  
-  // Event listeners for type selection
-  if (typeMovie) {
-    typeMovie.addEventListener('change', toggleSeriesInputs);
-  }
-  if (typeSeries) {
-    typeSeries.addEventListener('change', toggleSeriesInputs);
-  }
-  
-  // Search button click handler
-  if (searchBtn) {
-    searchBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      console.log('Search button clicked!');
-      
-      const query = searchInput.value.trim();
-      console.log('Search query:', query);
-      
-      if (!query) {
-        showError('Please enter a search term');
-        return;
-      }
+  const res = await fetch(
+    `${PROXY_BASE_URL}/subtitles?query=${encodeURIComponent(query)}&languages=${lang}`
+  );
+  const data = await res.json();
 
-      const contentType = typeSeries && typeSeries.checked ? 'series' : 'movie';
-      const season = (typeSeries && typeSeries.checked && seasonInput && seasonInput.value) ? parseInt(seasonInput.value) : null;
-      const episode = (typeSeries && typeSeries.checked && episodeInput && episodeInput.value) ? parseInt(episodeInput.value) : null;
+  hideLoading();
+  if (data.data?.length) displayResults(data.data);
+  else showError('No subtitles found');
+};
 
-      if (typeSeries && typeSeries.checked && (!season || !episode)) {
-        showError('Please enter both season and episode numbers for TV series');
-        return;
-      }
-
-      console.log('Searching with:', { query, contentType, season, episode });
-      searchSubtitles(query, languageFilter ? languageFilter.value : '', contentType, season, episode);
-    });
+// SEARCH BY FILE (HASH)
+fileSearchBtn.onclick = async () => {
+  const fileInput = document.getElementById('video-file-input');
+  if (!fileInput.files.length) {
+    return showError('Select a video file');
   }
-  
-  // Enter key handler
-  if (searchInput) {
-    searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (searchBtn) searchBtn.click();
-      }
-    });
-  }
-  
-  console.log('Subtitle Search App initialized successfully!');
-}
 
-// Wait for DOM to be ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initSubtitleSearch);
-} else {
-  // DOM is already ready
-  initSubtitleSearch();
+  clearError();
+  showLoading();
+
+  const formData = new FormData();
+  formData.append('video', fileInput.files[0]);
+
+  const res = await fetch(PROXY_BASE_URL, {
+    method: 'POST',
+    body: formData
+  });
+
+  const data = await res.json();
+  hideLoading();
+
+  if (data.subtitles?.length) displayResults(data.subtitles);
+  else showError('No subtitles found for this file');
+};
+
+// DOWNLOAD
+async function downloadSubtitle(fileId) {
+  const res = await fetch(`${PROXY_BASE_URL}/download`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file_id: fileId })
+  });
+
+  const data = await res.json();
+  window.location.href = data.link;
 }
 </script>
 
