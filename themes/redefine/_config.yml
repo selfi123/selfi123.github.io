@@ -224,6 +224,10 @@ navbar:
         Github: https://github.com/selfi123
         Instagram: https://www.instagram.com/strrik_king_selfi/
         Twitter: https://x.com/abel_jorlin
+    Pages: 
+      icon: fa-regular fa-folder-open
+      submenus:
+        Subtitle Search: /pages/subtitle-search
   # Navbar search (local search). Requires hexo-generator-searchdb (npm i hexo-generator-searchdb). See https://github.com/theme-next/hexo-generator-searchdb
   search:
     # Whether to enable

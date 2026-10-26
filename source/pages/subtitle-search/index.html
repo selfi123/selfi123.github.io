@@ -1,0 +1,240 @@
+---
+title: Subtitle Search
+layout: page
+---
+
+<div id="subtitle-search-app">
+  <div class="subtitle-search-container">
+    <h1>🎬 Subtitle Search & Download</h1>
+    <p class="subtitle-description">
+      Search subtitles by movie name or upload a video file for perfect sync.
+    </p>
+
+    <!-- SEARCH BY NAME -->
+    <div class="search-section">
+      <h3>Search by Name (Best effort)</h3>
+
+      <div class="search-input-group">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Enter movie or TV series name"
+          class="search-input"
+        />
+
+        <select id="language-filter" class="language-select">
+          <option value="">All Languages</option>
+          <option value="en">English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+        </select>
+
+        <button id="search-btn" class="search-button">
+          <i class="fa-solid fa-search"></i> Search
+        </button>
+      </div>
+    </div>
+
+    <!-- SEARCH BY FILE -->
+    <div class="search-section">
+      <h3>Search by Video File (Accurate ⭐)</h3>
+
+      <div class="file-search-section">
+        <input
+          type="file"
+          id="video-file-input"
+          accept=".mp4,.mkv,.avi,.mov"
+        />
+        <button id="file-search-btn" class="search-button">
+          <i class="fa-solid fa-file-video"></i> Find Subtitles by File
+        </button>
+      </div>
+    </div>
+
+    <div id="loading" class="loading hidden">
+      <div class="spinner"></div>
+      <p>Searching subtitles...</p>
+    </div>
+
+    <div id="error-message" class="error-message hidden"></div>
+
+    <div id="results-container" class="results-container hidden">
+      <h2>Search Results</h2>
+      <div id="results-list" class="results-list"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+.subtitle-search-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 2rem;
+}
+
+.search-input-group,
+.file-search-section {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-input,
+.language-select {
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+.search-button {
+  padding: 0.75rem 1.5rem;
+  background: #a31f34;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.search-button:hover {
+  background: #8a1a2a;
+}
+
+.loading,
+.hidden {
+  display: none;
+}
+
+.spinner {
+  border: 4px solid #ddd;
+  border-top: 4px solid #a31f34;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.subtitle-item {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+}
+
+.download-btn {
+  background: #a31f34;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
+}
+</style>
+
+<script>
+const PROXY_BASE_URL = 'https://subs-proxy.vercel.app/api/proxy';
+
+const searchBtn = document.getElementById('search-btn');
+const fileSearchBtn = document.getElementById('file-search-btn');
+const resultsList = document.getElementById('results-list');
+const resultsContainer = document.getElementById('results-container');
+const loading = document.getElementById('loading');
+const errorMessage = document.getElementById('error-message');
+
+function showLoading() {
+  loading.classList.remove('hidden');
+}
+function hideLoading() {
+  loading.classList.add('hidden');
+}
+function showError(msg) {
+  errorMessage.textContent = msg;
+  errorMessage.classList.remove('hidden');
+}
+function clearError() {
+  errorMessage.classList.add('hidden');
+}
+function showResults() {
+  resultsContainer.classList.remove('hidden');
+}
+
+function displayResults(subtitles) {
+  resultsList.innerHTML = '';
+  subtitles.forEach(sub => {
+    const div = document.createElement('div');
+    div.className = 'subtitle-item';
+    div.innerHTML = `
+      <p><strong>Language:</strong> ${sub.attributes.language}</p>
+      <p><strong>Release:</strong> ${sub.attributes.release || 'N/A'}</p>
+      <button class="download-btn" onclick="downloadSubtitle('${sub.id}')">
+        Download
+      </button>
+    `;
+    resultsList.appendChild(div);
+  });
+  showResults();
+}
+
+// SEARCH BY NAME
+searchBtn.onclick = async () => {
+  const query = document.getElementById('search-input').value.trim();
+  const lang = document.getElementById('language-filter').value;
+
+  if (!query) return showError('Enter movie name');
+
+  clearError();
+  showLoading();
+
+  const res = await fetch(
+    `${PROXY_BASE_URL}/subtitles?query=${encodeURIComponent(query)}&languages=${lang}`
+  );
+  const data = await res.json();
+
+  hideLoading();
+  if (data.data?.length) displayResults(data.data);
+  else showError('No subtitles found');
+};
+
+// SEARCH BY FILE (HASH)
+fileSearchBtn.onclick = async () => {
+  const fileInput = document.getElementById('video-file-input');
+  if (!fileInput.files.length) {
+    return showError('Select a video file');
+  }
+
+  clearError();
+  showLoading();
+
+  const formData = new FormData();
+  formData.append('video', fileInput.files[0]);
+
+  const res = await fetch(PROXY_BASE_URL, {
+    method: 'POST',
+    body: formData
+  });
+
+  const data = await res.json();
+  hideLoading();
+
+  if (data.subtitles?.length) displayResults(data.subtitles);
+  else showError('No subtitles found for this file');
+};
+
+// DOWNLOAD
+async function downloadSubtitle(fileId) {
+  const res = await fetch(`${PROXY_BASE_URL}/download`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file_id: fileId })
+  });
+
+  const data = await res.json();
+  window.location.href = data.link;
+}
+</script>
